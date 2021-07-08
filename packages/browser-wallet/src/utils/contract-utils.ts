@@ -1,7 +1,4 @@
-import {Contract} from 'ethers';
-import {ContractArtifacts} from '@statechannels/nitro-protocol';
-
-import {ETH_ASSET_HOLDER_ADDRESS, INFURA_API_KEY, TARGET_NETWORK} from '../config';
+import {INFURA_API_KEY, TARGET_NETWORK} from '../config';
 import {providers} from 'ethers';
 
 let provider: providers.Web3Provider | providers.JsonRpcProvider;
@@ -29,13 +26,4 @@ export function getProvider(): providers.Web3Provider | providers.JsonRpcProvide
   }
 
   return provider;
-}
-
-export function getEthAssetHolderContract() {
-  const provider = getProvider();
-  return new Contract(
-    ETH_ASSET_HOLDER_ADDRESS || '0x00',
-    ContractArtifacts.EthAssetHolderArtifact['abi'],
-    provider
-  );
 }

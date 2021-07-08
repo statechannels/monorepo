@@ -12,14 +12,14 @@ import {checkThat, exists, formatAmount} from '../../utils';
 import {BN} from '../../bignumber';
 
 export function serializeDomainBudget(budget: DomainBudget): AppDomainBudget {
-  const budgets: TokenBudget[] = Object.keys(budget.forAsset).map(assetHolderAddress => {
-    const assetBudget = checkThat<AssetBudget>(budget.forAsset[assetHolderAddress], exists);
+  const budgets: TokenBudget[] = Object.keys(budget.forAsset).map(asset => {
+    const assetBudget = checkThat<AssetBudget>(budget.forAsset[asset], exists);
     const channels = Object.keys(assetBudget.channels).map(channelId => ({
       channelId,
       amount: formatAmount(BN.from(assetBudget.channels[channelId].amount))
     }));
     return {
-      assetHolderAddress: assetHolderAddress || constants.AddressZero,
+      asset: asset || constants.AddressZero,
       availableReceiveCapacity: formatAmount(assetBudget.availableReceiveCapacity),
       availableSendCapacity: formatAmount(assetBudget.availableSendCapacity),
       channels
@@ -45,7 +45,7 @@ export function serializeAllocation(allocation: Allocation): AppAllocations {
 function serializeSimpleAllocation(allocation: SimpleAllocation): AppAllocation {
   return {
     allocationItems: allocation.allocationItems.map(serializeAllocationItem),
-    assetHolderAddress: allocation.assetHolderAddress
+    asset: allocation.asset
   };
 }
 

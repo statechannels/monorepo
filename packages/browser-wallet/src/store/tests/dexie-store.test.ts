@@ -224,7 +224,7 @@ describe('getBudget', () => {
       hubAddress: 'foo',
       forAsset: {
         ETH: {
-          assetHolderAddress: 'home',
+          asset: 'home',
           availableSendCapacity: BN.from(10),
           availableReceiveCapacity: BN.from(5),
           channels: {}

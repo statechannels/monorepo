@@ -1,50 +1,13 @@
-import {utils, providers, Signature, constants} from 'ethers';
+import {utils, providers, Signature} from 'ethers';
 
 import NitroAdjudicatorArtifact from '../../../artifacts/contracts/NitroAdjudicator.sol/NitroAdjudicator.json';
-import {getChannelId} from '../channel';
-import {encodeOutcome, Outcome} from '../outcome';
-import {getFixedPart, hashAppPart, hashState, State} from '../state';
+import {encodeOutcome} from '../outcome';
+import {getFixedPart, hashAppPart, State} from '../state';
 
 // https://github.com/ethers-io/ethers.js/issues/602#issuecomment-574671078
 const NitroAdjudicatorContractInterface = new utils.Interface(NitroAdjudicatorArtifact.abi);
 
-export type PushOutcomeTransactionArg = {
-  turnNumRecord: number;
-  finalizesAt: number;
-  state: State;
-  outcome: Outcome;
-  channelWasConcluded?: boolean;
-  challengerAddress?: string;
-};
-
-export const createPushOutcomeTransactionFactory = (transferAll: boolean) => (
-  arg: PushOutcomeTransactionArg
-): providers.TransactionRequest => {
-  const defaults = {channelWasConcluded: false, challengerAddress: constants.AddressZero};
-  const {turnNumRecord, finalizesAt, state, outcome, channelWasConcluded, challengerAddress} = {
-    ...defaults,
-    ...arg,
-  };
-  if (channelWasConcluded && turnNumRecord !== 0)
-    throw Error('If the channel was concluded, you should use 0 for turnNumRecord');
-  const channelId = getChannelId(state.channel);
-  const stateHash = channelWasConcluded ? constants.HashZero : hashState(state);
-  const encodedOutcome = encodeOutcome(outcome);
-
-  const funcName = transferAll ? 'pushOutcomeAndTransferAll' : 'pushOutcome';
-  const data = NitroAdjudicatorContractInterface.encodeFunctionData(funcName, [
-    channelId,
-    turnNumRecord,
-    finalizesAt,
-    stateHash,
-    challengerAddress,
-    encodedOutcome,
-  ]);
-
-  return {data};
-};
-
-export function concludePushOutcomeAndTransferAllArgs(
+export function concludeAndTransferAllAssetsArgs(
   states: State[],
   signatures: Signature[],
   whoSignedWhat: number[]
@@ -80,15 +43,15 @@ export function concludePushOutcomeAndTransferAllArgs(
   ];
 }
 
-export function createConcludePushOutcomeAndTransferAllTransaction(
+export function createConcludeAndTransferAllAssetsTransaction(
   states: State[],
   signatures: Signature[],
   whoSignedWhat: number[]
 ): providers.TransactionRequest {
   return {
     data: NitroAdjudicatorContractInterface.encodeFunctionData(
-      'concludePushOutcomeAndTransferAll',
-      concludePushOutcomeAndTransferAllArgs(states, signatures, whoSignedWhat)
+      'concludeAndTransferAllAssets',
+      concludeAndTransferAllAssetsArgs(states, signatures, whoSignedWhat)
     ),
   };
 }

@@ -18,7 +18,7 @@ const channelResult: ChannelResult = {
   ],
   allocations: [
     {
-      assetHolderAddress: '0x0000000000000000000000000000000000000000',
+      asset: '0x0000000000000000000000000000000000000000',
       allocationItems: [
         {
           destination: '0x63e3fb11830c01ac7c9c64091c14bb6cbaac9ac7',

@@ -10,7 +10,7 @@ export type Address = string;
 // @public
 export interface Allocation {
     allocationItems: AllocationItem[];
-    assetHolderAddress: Address;
+    asset: Address;
 }
 
 // @public
@@ -25,7 +25,7 @@ export type Allocations = Allocation[];
 // @public (undocumented)
 export interface ApproveBudgetAndFundParams {
     // (undocumented)
-    assetHolderAddress: Address;
+    asset: Address;
     // (undocumented)
     hub: Participant;
     // (undocumented)
@@ -300,7 +300,7 @@ export interface Funds {
     // (undocumented)
     amount: Uint256;
     // (undocumented)
-    assetHolderAddress: Address;
+    asset: Address;
 }
 
 // @public (undocumented)
@@ -583,7 +583,7 @@ export type SyncChannelResponse = JsonRpcResponse<{}>;
 // @public (undocumented)
 export interface TokenBudget {
     // (undocumented)
-    assetHolderAddress: Address;
+    asset: Address;
     // (undocumented)
     availableReceiveCapacity: Uint256;
     // (undocumented)

@@ -13,6 +13,6 @@
     "resolveJsonModule": true,
     "downlevelIteration": true
   },
-  "include": ["src/**/*", "test/**/*", "artifacts/**/*.json", "addresses.json"],
+  "include": ["src/**/*", "test/test-helpers.ts", "artifacts/**/*.json", "addresses.json"],
   "references": [{"path": "../jest-gas-reporter"}]
 }

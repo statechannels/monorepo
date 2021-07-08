@@ -72,7 +72,7 @@ export function isAllocation(
 
 // Guarantee Outcome and functions
 export interface GuaranteeAssetOutcome {
-  assetHolderAddress: Address;
+  asset: Address;
   guarantee: Guarantee;
 }
 export function isGuaranteeOutcome(
@@ -83,7 +83,7 @@ export function isGuaranteeOutcome(
 
 // Allocation outcome and functions
 export interface AllocationAssetOutcome {
-  assetHolderAddress: Address;
+  asset: Address;
   allocationItems: AllocationItem[];
 }
 export function isAllocationOutcome(
@@ -103,19 +103,16 @@ export function encodeAssetOutcomeFromBytes(
   );
 }
 
-export function decodeOutcomeItem(
-  encodedAssetOutcome: Bytes,
-  assetHolderAddress: string
-): AssetOutcome {
+export function decodeOutcomeItem(encodedAssetOutcome: Bytes, asset: string): AssetOutcome {
   const {outcomeType, allocationOrGuarantee} = utils.defaultAbiCoder.decode(
     ['tuple(uint8 outcomeType, bytes allocationOrGuarantee)'],
     encodedAssetOutcome
   )[0];
   switch (outcomeType) {
     case AssetOutcomeType.AllocationOutcomeType:
-      return {assetHolderAddress, allocationItems: decodeAllocation(allocationOrGuarantee)};
+      return {asset, allocationItems: decodeAllocation(allocationOrGuarantee)};
     case AssetOutcomeType.GuaranteeOutcomeType:
-      return {assetHolderAddress, guarantee: decodeGuarantee(allocationOrGuarantee)};
+      return {asset, guarantee: decodeGuarantee(allocationOrGuarantee)};
     default:
       throw new Error(`Received invalid outcome type ${outcomeType}`);
   }
@@ -151,10 +148,10 @@ export function hashOutcome(outcome: Outcome): Bytes32 {
 
 export function decodeOutcome(encodedOutcome: Bytes): Outcome {
   const assetOutcomes = utils.defaultAbiCoder.decode(
-    ['tuple(address assetHolderAddress, bytes outcomeContent)[]'],
+    ['tuple(address asset, bytes outcomeContent)[]'],
     encodedOutcome
   )[0];
-  return assetOutcomes.map(a => decodeOutcomeItem(a.outcomeContent, a.assetHolderAddress));
+  return assetOutcomes.map(a => decodeOutcomeItem(a.outcomeContent, a.asset));
 }
 
 export function encodeOutcome(outcome: Outcome): Bytes32 {
@@ -170,13 +167,13 @@ export function encodeOutcome(outcome: Outcome): Bytes32 {
     }
 
     return {
-      assetHolderAddress: o.assetHolderAddress,
+      asset: o.asset,
       outcomeContent: encodeAssetOutcomeFromBytes(outcomeType, encodedData),
     };
   });
 
   return utils.defaultAbiCoder.encode(
-    ['tuple(address assetHolderAddress, bytes outcomeContent)[]'],
+    ['tuple(address asset, bytes outcomeContent)[]'],
     [encodedAssetOutcomes]
   );
 }

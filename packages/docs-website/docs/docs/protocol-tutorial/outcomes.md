@@ -16,8 +16,12 @@ Nitro supports multiple different assets (e.g. ETH and one or more ERC20s) being
 
 An Allocation outcome specifies
 
-- at least one asset holder (which in turn is tied to a specific asset type such as ETH or an ERC20 token)
-- for each asset holder, an array of (destination, amount) pairs known as an `Allocation`, and indicating a payout of amount tokens to destination.
+- at least one asset (such as ETH or an ERC20 token).
+- for each asset, an array of (destination, amount) pairs known as an `Allocation`, and indicating a payout of amount tokens to destination.
+
+:::tip
+`asset` is used to store to the address of the ERC20 token contract. It can also be set to the zero address, and this implies the native token ETH.
+:::
 
 The destination here might be an external destination (which means the assets will get paid out to an ethereum address) or a channelId. In the code snippet below, we import `convertAddressToBytes32` to convert an ethereum address to an external destination.
 
@@ -41,7 +45,7 @@ import {
 
 
 const assetOutcome: AllocationAssetOutcome = {
-  assetHolderAddress: ETH_ASSET_HOLDER_ADDRESS
+  asset: ethers.constants.AddressZero
   allocationItems: [
     {destination: HashZero, amount: '0x03'}, // 3 wei
     // other payouts go here,
@@ -61,7 +65,7 @@ expect(decodeOutcome(encodedOutcome)).toEqual(outcome);
 
 ## Outcomes that guarantee
 
-Guarantee Asset Outcomes are similar to Allocation Asset Outcomes, only they not have any amounts. Their purpose is to simply express an ordering of destinations for a given asset holder (say, a given token).
+Guarantee Asset Outcomes are similar to Allocation Asset Outcomes, only they do not have any amounts. Their purpose is to simply express an ordering of destinations for a given asset (say, a given token).
 
 A channel that has a guarantee outcome is said to be a guarantor channel.
 
@@ -79,7 +83,7 @@ Constructing the right kind of object in typescript is straightforward:
 import {GuaranteeAssetOutcome} from '@statechannels/nitro-protocol';
 
 const assetOutcome: GuaranteeAssetOutcome = {
-  assetHolderAddress: process.env.ETH_ASSET_HOLDER_ADDRESS,
+  asset: ethers.constants.AddressZero,
   guarantee: {
     targetChannelId: HashZero,
     destinations: [

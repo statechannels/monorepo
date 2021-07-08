@@ -8,13 +8,13 @@ The wallet currently uses two types of outcomes.
 interface SimpleGuarantee {
   type: 'SimpleGuarantee';
   targetChannelId: string;
-  assetHolderAddress: string;
+  asset: string;
   destinations: string[];
 }
 
 interface SimpleAllocation {
   type: 'SimpleAllocation';
-  assetHolderAddress: string;
+  asset: string;
   allocationItems: {destination: Destination; amount: BigNumber}[];
 }
 ```

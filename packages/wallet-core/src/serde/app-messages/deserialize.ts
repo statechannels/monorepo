@@ -15,16 +15,16 @@ import {
   AssetBudget,
   makeAddress
 } from '../../types';
-import {ETH_ASSET_HOLDER_ADDRESS} from '../../config';
 import {BN} from '../../bignumber';
 import {makeDestination} from '../../utils';
+import {zeroAddress} from '../../config';
 
 export function deserializeBudgetRequest(
   budgetRequest: AppBudgetRequest,
   domain: string
 ): DomainBudget {
   const assetBudget: AssetBudget = {
-    assetHolderAddress: ETH_ASSET_HOLDER_ADDRESS,
+    asset: zeroAddress,
     availableSendCapacity: BN.from(budgetRequest.requestedSendCapacity),
     availableReceiveCapacity: BN.from(budgetRequest.requestedReceiveCapacity),
     channels: {}
@@ -32,13 +32,13 @@ export function deserializeBudgetRequest(
   return {
     domain,
     hubAddress: budgetRequest.hub.signingAddress,
-    forAsset: {[ETH_ASSET_HOLDER_ADDRESS]: assetBudget}
+    forAsset: {[zeroAddress]: assetBudget}
   };
 }
 
 export function deserializeDomainBudget(DomainBudget: AppDomainBudget): DomainBudget {
   const assetBudgets: AssetBudget[] = DomainBudget.budgets.map(b => ({
-    assetHolderAddress: b.assetHolderAddress || constants.AddressZero,
+    asset: b.asset || constants.AddressZero,
     availableReceiveCapacity: BN.from(b.availableReceiveCapacity),
     availableSendCapacity: BN.from(b.availableSendCapacity),
     channels: b.channels.reduce((record, item) => {
@@ -47,7 +47,7 @@ export function deserializeDomainBudget(DomainBudget: AppDomainBudget): DomainBu
     }, {})
   }));
   const budgets = assetBudgets.reduce((record, a) => {
-    record[a.assetHolderAddress] = a;
+    record[a.asset] = a;
     return record;
   }, {});
 
@@ -76,7 +76,7 @@ function deserializeAllocation(allocation: AppAllocation): SimpleAllocation {
   return {
     type: 'SimpleAllocation',
     allocationItems: allocation.allocationItems.map(deserializeAllocationItem),
-    assetHolderAddress: makeAddress(allocation.assetHolderAddress)
+    asset: makeAddress(allocation.asset)
   };
 }
 

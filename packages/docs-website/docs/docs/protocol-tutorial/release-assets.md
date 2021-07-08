@@ -3,66 +3,11 @@ id: release-assets
 title: Release assets
 ---
 
-If a channel has been finalized on chain, the adjudicator contract knows about the final outcome. This tutorial section covers pushing that outcome to the asset holder contract(s), which is a necessary step to releasing the assets.
+If a channel has been finalized on chain, the adjudicator contract knows about the final outcome. This tutorial section covers releasing the assets.
 
-## Using `pushOutcome`
+## Using `transfer`
 
-A finalized outcome is stored in two places on chain: first, as a single hash in the adjudicator contract; second, in multiple hashes across multiple asset holder contracts.
-
-The `pushOutcome` method on the `NitroAdjudicator` allows one or more `assetOutcomes` to be registered against a channel in a number of AssetHolder contracts (specified by the `outcome` stored against a channel that has been finalized in the adjudicator).
-
-In this example we will limit ourselves to an outcome that specifies ETH only, and therefore will only be pushing the outcome to a single contract (the `ETHAssetHolder`).
-
-Let us begin with a conclude transaction, following the steps in the tutorial section above. When we finalize a channel this way, the chain stores the timestamp of the current blocknumber. We need to extract this information from the transaction receipt in order to be able to push the outcome successfully.
-
-```typescript
-// In lesson13.test.ts
-
-/* 
-  Submit a conclude transaction
-*/
-const tx0 = NitroAdjudicator.conclude(
-  largestTurnNum,
-  fixedPart,
-  appPartHash,
-  outcomeHash,
-  numStates,
-  whoSignedWhat,
-  sigs
-);
-
-/* 
-  Store the receipt, which tells us about when the challenge was registered
-*/
-const receipt = await(await tx0).wait();
-const finalizesAt = (await provider.getBlock(receipt.blockNumber)).timestamp;
-
-/* 
-  Form the arguments for the pushOutcome transaction
-*/
-const channelId = getChannelId(channel);
-
-const stateHash = HashZero; // Reset in a happy conclude
-const challengerAddress = AddressZero; // Reset in a happy conclude
-const outcomeBytes = encodeOutcome(state.outcome);
-
-const turnNumRecord = 0;
-
-const tx1 = NitroAdjudicator.pushOutcome(
-  channelId,
-  turnNumRecord,
-  finalizesAt,
-  stateHash,
-  challengerAddress,
-  outcomeBytes
-);
-
-await(await tx1).wait();
-```
-
-## Using `transferAll`
-
-The `transferAll` method is available on all asset holders, including the `ETHAssetHolder`. It pays out assets according to outcomes that it knows about, if the channel is sufficiently funded.
+The `transfer` method pays out a given asset to a given set of destinations, according to outcomes that it knows about, if the channel is sufficiently funded.
 
 ```typescript
 // In lesson14.test.ts
@@ -75,25 +20,32 @@ const EOA = ethers.Wallet.createRandom().address;
 const destination = hexZeroPad(EOA, 32);
 
 const assetOutcome: AllocationAssetOutcome = {
-  assetHolderAddress: process.env.ETH_ASSET_HOLDER_ADDRESS,
+  asset: MAGIC_ADDRESS_INDICATING_ETH,
   allocationItems: [{destination, amount}]
 };
+const outcomeBytes = encodeOutcome([
+  {asset: MAGIC_ADDRESS_INDICATING_ETH, allocationItems: allocation},
+]);
 
 // Following earlier tutorials ...
 // tx0 fund a channel
 // tx1 conclude this channel with this outcome
-// tx2 pushOutcome to the ETH_ASSET_HOLDER
 // ...
 
-const tx3 = ETHAssetHolder.transferAll(channelId, encodeAllocation(assetOutcome.allocationItems));
+const assetIndex = 0; // implies we are paying out the 0th asset (in this case the only asset, ETH)
+const stateHash = constants.HashZero; // if the channel was concluded on the happy path, we can use this default value
+const challengerAddress = constants.AddressZero; // if the channel was concluded on the happy path, we can use this default value
+const indices = []; // this magic value (a zero length array) implies we want to pay out all of the allocationItems (in this case there is only one)
 
-/* 
-  Check that an AllocationUpdated event was emitted. 
+const tx2 = NitroAdjudicator.transfer(assetIndex, channelId, outcomeBytes, stateHash, challengerAddress, indices);
+
+/*
+  Check that a FingerprintUpdated event was emitted.
 */
 const {events} = await(await tx3).wait();
 expect(events).toMatchObject(
   {
-    event: 'AllocationUpdated',
+    event: 'FingerprintUpdated',
   },
 ]);
 
@@ -101,7 +53,7 @@ expect(BigNumber.from(await provider.getBalance(EOA)).eq(BigNumber.from(amount))
 ```
 
 :::tip
-If the destination specified in the outcome is external, the asset holder pays out the funds (as in the example above). Otherwise the destination is a channel id, and the contract updates its internal accounting such that this channel has its direct funding increased.
+If the destination specified in the outcome is external, the assets are paid out (as in the example above). Otherwise the destination is a channel id, and the contract updates its internal accounting such that this channel has its direct funding increased.
 :::
 
 :::tip
@@ -112,9 +64,9 @@ This method executes payouts that might benefit multiple participants. If multip
 It may be desirable to payout to a subset of destinations (or even a single one). The `transfer` method can be used to do this, and accepts a list of `indices` to transfer from. See the contract API for more information. More information coming soon, including how to track the updated allocation after a `transfer` is mined.
 :::
 
-## Using `claimAll`
+## Using `claim`
 
-The `claimAll` method will pay out the funds held against a guarantor channel, according to a _target_ channel's outcome but with an preference order controlled by the guarantor channel.
+The `claim` method will pay out a particular asset held against a guarantor channel, according to a _target_ channel's outcome (and the specified allocation items) but with an preference order controlled by the guarantor channel. The API is otherwise similar to `transfer`, only metadata about both channels must be supplied.
 
 ```typescript
 // In lesson15.test.ts
@@ -126,7 +78,7 @@ const destination1 = hexZeroPad(EOA1, 32);
 const destination2 = hexZeroPad(EOA2, 32);
 
 const assetOutcomeForTheTargetChannel: AllocationAssetOutcome = {
-  assetHolderAddress: process.env.ETH_ASSET_HOLDER_ADDRESS,
+  asset: MAGIC_ADDRESS_INDICATING_ETH,
   allocationItems: [
     {destination: destination1, amount},
     {destination: destination2, amount}
@@ -134,7 +86,7 @@ const assetOutcomeForTheTargetChannel: AllocationAssetOutcome = {
 };
 
 const assetOutcomeForTheGuarantorChannel: GuaranteeAssetOutcome = {
-  assetHolderAddress: process.env.ETH_ASSET_HOLDER_ADDRESS,
+  asset: MAGIC_ADDRESS_INDICATING_ETH,
   guarantee: {
     targetChannelId: targetChannelId,
     destinations: [
@@ -144,13 +96,14 @@ const assetOutcomeForTheGuarantorChannel: GuaranteeAssetOutcome = {
   }
 };
 
+const targetOutcomeBytes = encodeOutcome([assetOutcomeForTheTargetChannel]);
+const guarantorOutcomeBytes = encodeOutcome([assetOutcomeForTheGuarantorChannel]);
+
 // Following earlier tutorials ...
 // tx0 finalize a channel that allocates to Alice then Bob
-// tx1 pushOutcome to the ETH_ASSET_HOLDER
-// tx2 finalize a guarantor channel that targets the first channel
+// tx1 finalize a guarantor channel that targets the first channel
 // and reprioritizes Bob over Alice
-// tx3 pushOutcome to the ETH_ASSET_HOLDER
-// tx4 fund the _guarantor_ channel, not the target channel
+// tx2 fund the _guarantor_ channel, not the target channel
 // with a deposit that only covers one of the payouts
 // check that Bob got his payout
 // ...
@@ -158,13 +111,25 @@ const assetOutcomeForTheGuarantorChannel: GuaranteeAssetOutcome = {
 /*
     Submit claimAll transaction
   */
-const tx5 = ETHAssetHolder.claimAll(
-  guarantorChannelId,
-  encodeGuarantee(assetOutcomeForTheGuarantorChannel.guarantee),
-  encodeAllocation(assetOutcomeForTheTargetChannel.allocationItems)
+
+const assetIndex = 0; // implies we are paying out the 0th asset (in this case the only asset, ETH)
+const stateHash = (targetStateHash = constants.HashZero); // if the channels were concluded on the happy path, we can use this default value
+const challengerAddress = (targetChallengerAddress = constants.AddressZero); // if the channels were concluded on the happy path, we can use this default value
+const indices = []; // this magic value (a zero length array) implies we want to pay out all of the allocationItems (in this case there is only one)
+
+const tx3 = NitroAdjudicator.claim(
+  assetIndex,
+  guarantorId,
+  guarantorOutcomeBytes,
+  stateHash,
+  challengerAddress,
+  targetOutcomeBytes,
+  targetStateHash,
+  targetChallengerAddress,
+  indices
 );
 
-await(await tx5).wait();
+await(await tx3).wait();
 /* 
   Check that the ethereum account balance was updated
 */
@@ -173,10 +138,10 @@ expect(BigNumber.from(await provider.getBalance(EOA2)).eq(BigNumber.from(amount)
 
 If this process seems overly complicated to you: remember that guarantor channels are only required when virtually funding a channel. Also bear in mind that this process is unlinkely to actually play out on chain very often: it is in everyone's interest to administrate inter-channel funding off chain as much as possible, with the on chain administration such as this used as a last resort.
 
-## Using `pushOutcomeAndTransferAll`
+## Using `transferAllAssets`
 
-Instead of pushing the outcome from the adjudicator to the asset holder in one transaction, and _then_ transferring the assets out of a channel according to that outcome, it is more convenient to use the adjudicator's `pushOutcomeAndTransferfAll` method, which will do both in one go and save gas, to boot.
+If we wish to liquidate all assets from a channel, it is more convenient to use the `transferAllAssets` method, which will do this in a gas efficient manner.
 
-## Using `concludePushOutcomeAndTransferAll`
+## Using `concludeAndTransferAllAssets`
 
-If we have a finalization proof, then we can call `condludePushOutcomeAndTransferAll` to do the channel close, outcome push and payouts in one transaction.
+If we have a finalization proof, then we can call `concludeAndTransferAllAssets` to do the channel conclusion and payouts for all assets in one transaction.

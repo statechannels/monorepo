@@ -28,7 +28,7 @@ import {ChannelChainInfo} from '../chain';
 import {Store} from '../store';
 import {MessagingServiceInterface} from '../messaging';
 import {sendUserDeclinedResponse, hideUI, displayUI} from '../utils/workflow-utils';
-import {CHALLENGE_DURATION, ETH_ASSET_HOLDER_ADDRESS} from '../config';
+import {CHALLENGE_DURATION, zeroAddress} from '../config';
 const {add} = BN;
 interface ChainEvent {
   type: 'CHAIN_EVENT';
@@ -269,7 +269,7 @@ function convertPendingBudgetToAllocation({hub, player, budget}: Context): Simpl
   }
   // todo: this throws if the budget is undefined and casts it to a AssetBudget otherwise
   // maybe this should be called assertBudgetExists ??
-  const ethBudget = checkThat<AssetBudget>(budget.forAsset[ETH_ASSET_HOLDER_ADDRESS], exists);
+  const ethBudget = checkThat<AssetBudget>(budget.forAsset[zeroAddress], exists);
   const playerItem = {
     destination: player.destination,
     amount: ethBudget.availableSendCapacity
@@ -297,10 +297,7 @@ const assignDepositingInfo = assign<Context>({
 });
 
 const calculateDepositInfo = (context: Context) => {
-  const ethBudget = checkThat<AssetBudget>(
-    context.budget.forAsset[ETH_ASSET_HOLDER_ADDRESS],
-    exists
-  );
+  const ethBudget = checkThat<AssetBudget>(context.budget.forAsset[zeroAddress], exists);
   const ourAmount = ethBudget.availableSendCapacity;
   const hubAmount = ethBudget.availableSendCapacity;
   const totalAmount = add(ourAmount, hubAmount);
@@ -323,7 +320,7 @@ const notifyWhenPreFSSupported = (store: Store) => ({ledgerState, ledgerId}: Led
     .toPromise();
 
 const notifyWhenSufficientFunds = (store: Store) => ({budget}: Initial) => {
-  const ethBudget = checkThat<AssetBudget>(budget.forAsset[ETH_ASSET_HOLDER_ADDRESS], exists);
+  const ethBudget = checkThat<AssetBudget>(budget.forAsset[zeroAddress], exists);
   if (!store.chain.selectedAddress) {
     throw new Error('No selected address');
   }

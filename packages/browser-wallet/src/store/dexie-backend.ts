@@ -120,7 +120,7 @@ export class Backend implements DBBackend {
     return {
       ...budget,
       forAsset: _.mapValues(budget.forAsset, (assetBudget: AssetBudget) => ({
-        assetHolderAddress: assetBudget.assetHolderAddress,
+        asset: assetBudget.asset,
         availableReceiveCapacity: BN.from(assetBudget.availableReceiveCapacity),
         availableSendCapacity: BN.from(assetBudget.availableSendCapacity),
         channels: assetBudget.channels

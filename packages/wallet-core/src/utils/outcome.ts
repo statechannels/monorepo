@@ -11,8 +11,8 @@ import {
   Address,
   makeAddress
 } from '../types';
-import {ETH_ASSET_HOLDER_ADDRESS} from '../config';
 import {BN, Zero} from '../bignumber';
+import {zeroAddress} from '../config';
 
 import {checkThat} from './helpers';
 
@@ -21,9 +21,7 @@ export function isSimpleAllocation(outcome: Outcome): outcome is SimpleAllocatio
 }
 
 export function isSimpleEthAllocation(outcome: Outcome): outcome is SimpleAllocation {
-  return (
-    outcome.type === 'SimpleAllocation' && outcome.assetHolderAddress === ETH_ASSET_HOLDER_ADDRESS
-  );
+  return outcome.type === 'SimpleAllocation' && outcome.asset === ethers.constants.AddressZero;
 }
 
 export function assertSimpleEthAllocation(outcome: Outcome): SimpleAllocation {
@@ -32,7 +30,7 @@ export function assertSimpleEthAllocation(outcome: Outcome): SimpleAllocation {
 
 export const simpleEthAllocation = (allocationItems: AllocationItem[]): SimpleAllocation => ({
   type: 'SimpleAllocation',
-  assetHolderAddress: ETH_ASSET_HOLDER_ADDRESS,
+  asset: zeroAddress,
   allocationItems
 });
 
@@ -43,15 +41,15 @@ export const simpleEthGuarantee = (
   type: 'SimpleGuarantee',
   destinations,
   targetChannelId,
-  assetHolderAddress: ETH_ASSET_HOLDER_ADDRESS
+  asset: zeroAddress
 });
 
 export const simpleTokenAllocation = (
-  assetHolderAddress: Address,
+  asset: Address,
   allocationItems: AllocationItem[]
 ): SimpleAllocation => ({
   type: 'SimpleAllocation',
-  assetHolderAddress,
+  asset,
   allocationItems
 });
 

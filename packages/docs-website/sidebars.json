@@ -27,7 +27,7 @@
     ],
     "Implementation Notes": [
       "docs/implementation-notes/contract-devs-intro",
-      "docs/implementation-notes/asset-holder",
+      "docs/implementation-notes/multi-asset-holder",
       "docs/implementation-notes/force-move",
       "docs/implementation-notes/nitro-adjudicator",
       "docs/implementation-notes/null-app",
@@ -42,23 +42,18 @@
       "contract-api/natspec/ForceMove",
       "contract-api/natspec/IAdjudicator",
       "contract-api/natspec/IForceMoveApp",
-      "contract-api/natspec/IAssetHolder",
-      "contract-api/natspec/AssetHolder",
+      "contract-api/natspec/IMultiAssetHolder",
+      "contract-api/natspec/MultiAssetHolder",
       "contract-api/natspec/IERC20",
       "contract-api/natspec/ERC20"
     ],
-    "Deployed Contracts": [
-      "contract-api/natspec/NitroAdjudicator",
-      "contract-api/natspec/ERC20AssetHolder",
-      "contract-api/natspec/ETHAssetHolder"
-    ],
+    "Deployed Contracts": ["contract-api/natspec/NitroAdjudicator"],
     "ForceMove Apps": [
       "contract-api/natspec/CountingApp",
       "contract-api/natspec/SingleAssetPayments",
       "contract-api/natspec/TrivialApp"
     ],
     "Test Contracts": [
-      "contract-api/natspec/TESTAssetHolder",
       "contract-api/natspec/TESTForceMove",
       "contract-api/natspec/TESTNitroAdjudicator",
       "contract-api/natspec/Token"

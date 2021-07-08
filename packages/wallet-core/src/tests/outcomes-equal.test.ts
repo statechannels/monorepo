@@ -10,13 +10,13 @@ const HashZero = constants.HashZero;
 
 const simpleAllocation1: SimpleAllocation = {
   type: 'SimpleAllocation',
-  assetHolderAddress: AddressZero,
+  asset: AddressZero,
   allocationItems: [{destination: makeDestination(HashZero), amount: BN.from('0x2')}]
 };
 
 const simpleAllocation2: SimpleAllocation = {
   type: 'SimpleAllocation',
-  assetHolderAddress: AddressZero,
+  asset: AddressZero,
   allocationItems: [{destination: makeDestination(HashZero), amount: BN.from('0x02')}]
 };
 

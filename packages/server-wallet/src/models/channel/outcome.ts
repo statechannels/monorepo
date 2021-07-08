@@ -41,7 +41,7 @@ export class SimpleAllocationOutcome {
     return (
       !!otherOutcome &&
       this.outcome.type === otherOutcome.toLegacyAllocation.type &&
-      this.outcome.assetHolderAddress === otherOutcome.toLegacyAllocation.assetHolderAddress &&
+      this.outcome.asset === otherOutcome.toLegacyAllocation.asset &&
       _.every(_.zip(this.items, otherOutcome.items).map(([a, b]) => allocationItemsEqual(a, b)))
     );
   }

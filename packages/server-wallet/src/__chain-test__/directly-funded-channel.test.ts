@@ -4,7 +4,7 @@ import {CreateChannelParams, Participant, Allocation} from '@statechannels/clien
 import {TEST_ACCOUNTS} from '@statechannels/devtools';
 import {ContractArtifacts} from '@statechannels/nitro-protocol';
 import {BN, makeAddress, makeDestination} from '@statechannels/wallet-core';
-import {BigNumber, BigNumberish, Contract, providers, utils} from 'ethers';
+import {BigNumber, BigNumberish, Contract, ethers, providers, utils} from 'ethers';
 import _ from 'lodash';
 import {hexZeroPad} from '@ethersproject/bytes';
 
@@ -25,7 +25,8 @@ import {createLogger} from '../logger';
 jest.setTimeout(60_000);
 
 // eslint-disable-next-line no-process-env, @typescript-eslint/no-non-null-assertion
-const ethAssetHolderAddress = makeAddress(process.env.ETH_ASSET_HOLDER_ADDRESS!);
+const nitroAdjudicatorAddress = makeAddress(process.env.NITRO_ADJUDICATOR_ADDRESS!);
+
 // eslint-disable-next-line no-process-env, @typescript-eslint/no-non-null-assertion
 if (!process.env.RPC_ENDPOINT) throw new Error('RPC_ENDPOINT must be defined');
 // eslint-disable-next-line no-process-env, @typescript-eslint/no-non-null-assertion
@@ -111,12 +112,12 @@ beforeAll(async () => {
   const logger = createLogger(defaultTestWalletConfig());
 
   TestMessageService.linkMessageServices(a.messageService, b.messageService, logger);
-  const assetHolder = new Contract(
-    ethAssetHolderAddress,
-    ContractArtifacts.EthAssetHolderArtifact.abi,
+  const nitroAdjudicator = new Contract(
+    nitroAdjudicatorAddress,
+    ContractArtifacts.NitroAdjudicatorArtifact.abi,
     provider
   );
-  mineOnEvent(assetHolder);
+  mineOnEvent(nitroAdjudicator);
 });
 
 afterAll(async () => {
@@ -169,7 +170,7 @@ test.each(testCases)(
 
     const aBalanceInit = await getBalance(aAddress);
     const bBalanceInit = await getBalance(bAddress);
-    const assetHolderBalanceInit = await getBalance(ethAssetHolderAddress);
+    const assetHolderBalanceInit = await getBalance(nitroAdjudicatorAddress);
 
     const response = await a.createChannels([channelParams]);
     await waitForObjectiveProposals([response[0].objectiveId], b);
@@ -178,7 +179,7 @@ test.each(testCases)(
     await expect(response).toBeObjectiveDoneType('Success');
     await expect(bResponse).toBeObjectiveDoneType('Success');
 
-    const assetHolderBalanceUpdated = await getBalance(ethAssetHolderAddress);
+    const assetHolderBalanceUpdated = await getBalance(nitroAdjudicatorAddress);
 
     const totalDepositAmount = BN.add(startBalance.aAmount, startBalance.bAmount);
     expect(BN.sub(assetHolderBalanceUpdated, assetHolderBalanceInit)).toEqual(totalDepositAmount);
@@ -233,5 +234,5 @@ const createAllocation = ({
       amount: hexZeroPad(BigNumber.from(bAmount).toHexString(), 32),
     },
   ],
-  assetHolderAddress: ethAssetHolderAddress,
+  asset: ethers.constants.AddressZero,
 });

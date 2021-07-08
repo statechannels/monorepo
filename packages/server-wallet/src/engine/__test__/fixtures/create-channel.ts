@@ -15,7 +15,7 @@ const defaultVars: CreateChannelParams = {
   challengeDuration: ONE_DAY,
   allocations: [
     {
-      assetHolderAddress: constants.AddressZero,
+      asset: constants.AddressZero,
       allocationItems: [
         {destination: alice().destination, amount: BN.from(1)},
         {destination: bob().destination, amount: BN.from(3)},

@@ -17,14 +17,14 @@ import {
   Uint256,
   Address
 } from '@statechannels/wallet-core';
-import {Contract, Wallet, utils, providers} from 'ethers';
+import {Contract, Wallet, utils, providers, constants} from 'ethers';
 import {Observable, fromEvent, from, merge} from 'rxjs';
 import {filter, map, flatMap, distinctUntilChanged} from 'rxjs/operators';
 import EventEmitter from 'eventemitter3';
 import _ from 'lodash';
 
 import {getProvider} from './utils/contract-utils';
-import {ETH_ASSET_HOLDER_ADDRESS, NITRO_ADJUDICATOR_ADDRESS} from './config';
+import {NITRO_ADJUDICATOR_ADDRESS} from './config';
 import {logger} from './logger';
 
 export interface ChannelChainInfo {
@@ -255,7 +255,6 @@ const chainLogger = logger.child({module: 'chain'});
 const GAS_PRICE = utils.parseUnits('15', 'gwei');
 export class ChainWatcher implements Chain {
   private _adjudicator?: Contract;
-  private _assetHolders: Contract[];
   private provider: ReturnType<typeof getProvider>;
   private mySelectedAddress: string | undefined;
 
@@ -286,18 +285,6 @@ export class ChainWatcher implements Chain {
 
   private configureContracts() {
     if (!this.ethereumIsEnabled) return;
-
-    this._assetHolders = [
-      new Contract(
-        ETH_ASSET_HOLDER_ADDRESS,
-        ContractArtifacts.EthAssetHolderArtifact.abi,
-        this.signer
-      )
-    ];
-
-    // Log all contract events (for now)
-    this._assetHolders[0].on('*', event => chainLogger.trace({event}, 'assetHolder[0] event'));
-
     this._adjudicator = new Contract(
       NITRO_ADJUDICATOR_ADDRESS,
       ContractArtifacts.NitroAdjudicatorArtifact.abi,
@@ -306,9 +293,7 @@ export class ChainWatcher implements Chain {
 
     chainLogger.info(
       {
-        ETH_ASSET_HOLDER_ADDRESS,
-        NITRO_ADJUDICATOR_ADDRESS,
-        numAssetHolders: this._assetHolders.length
+        NITRO_ADJUDICATOR_ADDRESS
       },
       'Contracts configured'
     );
@@ -355,7 +340,7 @@ export class ChainWatcher implements Chain {
 
   public async finalizeAndWithdraw(finalizationProof: SignedState[]): Promise<string | undefined> {
     const transactionRequest = {
-      ...Transactions.createConcludePushOutcomeAndTransferAllTransaction(
+      ...Transactions.createConcludeAndTransferAllAssetsTransaction(
         finalizationProof.flatMap(toNitroSignedState)
       ),
       to: NITRO_ADJUDICATOR_ADDRESS
@@ -398,7 +383,7 @@ export class ChainWatcher implements Chain {
   ): Promise<string | undefined> {
     const transactionRequest = {
       ...createETHDepositTransaction(channelId, expectedHeld, amount),
-      to: ETH_ASSET_HOLDER_ADDRESS,
+      to: NITRO_ADJUDICATOR_ADDRESS,
       value: amount
     };
     const response = await this.signer.sendTransaction({
@@ -411,12 +396,13 @@ export class ChainWatcher implements Chain {
   }
 
   public async getChainInfo(channelId: string): Promise<ChannelChainInfo> {
-    if (!this._assetHolders || !this._assetHolders[0] || !this._adjudicator) {
+    if (!this._adjudicator) {
       throw new Error('Not connected to contracts');
     }
-    const ethAssetHolder = this._assetHolders[0];
 
-    const amount: Uint256 = BN.from(await ethAssetHolder.holdings(channelId));
+    const amount: Uint256 = BN.from(
+      await this._adjudicator.holdings(constants.AddressZero, channelId)
+    );
 
     const [turnNumRecord, finalizesAt]: [number, number] = await this._adjudicator.unpackStatus(
       channelId
@@ -457,7 +443,7 @@ export class ChainWatcher implements Chain {
   }
 
   public chainUpdatedFeed(channelId: string): Observable<ChannelChainInfo> {
-    if (!this._assetHolders || !this._assetHolders[0] || !this._adjudicator) {
+    if (!this._adjudicator) {
       throw new Error('Not connected to contracts');
     }
 
@@ -466,7 +452,7 @@ export class ChainWatcher implements Chain {
     // Consider adding polling as an option to the chain watcher
     //const polledData = interval(5000).pipe(flatMap(() => this.getChainInfo(channelId)));
 
-    const depositEvents = fromEvent(this._assetHolders[0], 'Deposited').pipe(
+    const depositEvents = fromEvent(this._adjudicator, 'Deposited').pipe(
       // TODO: Type event correctly, use ethers-utils.js
       filter((event: Array<any>) => BN.eq(event[0], channelId)),
       // TODO: Currently it seems that getChainInfo can return stale information
@@ -478,7 +464,7 @@ export class ChainWatcher implements Chain {
       }))
     );
 
-    const assetTransferEvents = fromEvent(this._assetHolders[0], 'AllocationUpdated').pipe(
+    const assetTransferEvents = fromEvent(this._adjudicator, 'FingerprintUpdated').pipe(
       // TODO: Type event correctly, use ethers-utils.js
       filter((event: Array<string | Uint256>) => BN.eq(event[0], channelId)),
       // Actually ignores the event data and just polls the chain
@@ -517,7 +503,6 @@ export class ChainWatcher implements Chain {
   public destroy(): void {
     this.provider.polling = false;
     this._adjudicator?.removeAllListeners();
-    this._assetHolders.map(assetHolder => assetHolder.removeAllListeners());
     this.provider.removeAllListeners();
   }
 }

@@ -9,15 +9,13 @@ import {
   State,
   checkThat,
   isSimpleEthAllocation,
-  BN,
-  makeAddress
+  BN
 } from '@statechannels/wallet-core';
-import {constants} from 'ethers';
 
 import {Store} from '../../store';
 import {FakeChain} from '../../chain';
 import {TestStore} from '../../test-store';
-import {ETH_ASSET_HOLDER_ADDRESS, HUB} from '../../config';
+import {HUB, zeroAddress} from '../../config';
 import {Init, machine} from '../create-and-fund';
 import {MessagingService, MessagingServiceInterface} from '../../messaging';
 
@@ -43,7 +41,7 @@ const EXPECT_TIMEOUT = process.env.CI ? 9500 : 2000;
 
 const chainId = '0x01';
 const challengeDuration = 10;
-const appDefinition = makeAddress(constants.AddressZero);
+const appDefinition = zeroAddress;
 
 const targetChannel: ChannelConstants = {
   channelNonce: 0,
@@ -68,7 +66,7 @@ const totalAmount = amounts.reduce((a, b) => add(a, b));
 
 const allocation: Outcome = {
   type: 'SimpleAllocation',
-  assetHolderAddress: ETH_ASSET_HOLDER_ADDRESS,
+  asset: zeroAddress,
   allocationItems: [0, 1].map(i => ({
     destination: destinations[i],
     amount: amounts[i]
@@ -183,12 +181,10 @@ test.skip('it uses virtual funding when enabled', async () => {
 
   // Verify the budgets are allocated to the channel
   const aBudget = await aStore.getBudget(TEST_APP_DOMAIN);
-  const aChannelAmount =
-    aBudget?.forAsset[ETH_ASSET_HOLDER_ADDRESS]?.channels[targetChannelId].amount;
+  const aChannelAmount = aBudget?.forAsset[zeroAddress]?.channels[targetChannelId].amount;
   expect(aChannelAmount).toEqual(totalAmount);
 
   const bBudget = await bStore.getBudget(TEST_APP_DOMAIN);
-  const bChannelAmount =
-    bBudget?.forAsset[ETH_ASSET_HOLDER_ADDRESS]?.channels[targetChannelId].amount;
+  const bChannelAmount = bBudget?.forAsset[zeroAddress]?.channels[targetChannelId].amount;
   expect(bChannelAmount).toEqual(totalAmount);
 });

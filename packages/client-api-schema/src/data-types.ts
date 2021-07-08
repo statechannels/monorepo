@@ -68,9 +68,9 @@ export interface AllocationItem {
  */
 export interface Allocation {
   /**
-   * The asset holder contract address
+   * The contract address of the asset
    */
-  assetHolderAddress: Address;
+  asset: Address;
   /**
    * Array of destination-amount pairings
    */
@@ -88,7 +88,7 @@ export interface ChannelBudget {
 }
 
 export interface TokenBudget {
-  assetHolderAddress: Address;
+  asset: Address;
   availableReceiveCapacity: Uint256;
   availableSendCapacity: Uint256;
   channels: ChannelBudget[];
@@ -100,7 +100,7 @@ export interface DomainBudget {
 }
 
 export interface Funds {
-  assetHolderAddress: Address;
+  asset: Address;
   amount: Uint256;
 }
 

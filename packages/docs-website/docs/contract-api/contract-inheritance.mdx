@@ -7,7 +7,7 @@ import Mermaid from '@theme/Mermaid';
 
 The following diagram shows how the contracts inherit from one another. Click on a node to see the corresponding API.
 
-## Assets
+## Assets and Adjudication
 
 <Mermaid
   chart='
@@ -15,19 +15,14 @@ graph TD
 linkStyle default interpolate basis
 SafeMath([SafeMath])
 Outcome([Outcome])
-IAssetHolder
-AssetHolder
+IMultiAssetHolder
+MultiAssetHolder
 IERC20
-ERC20AssetHolder
-ETHAssetHolder
-TESTAssetHolder
-IAssetHolder--> AssetHolder
-SafeMath-.-> AssetHolder
-IERC20-.-> ERC20AssetHolder
-Outcome-.-> AssetHolder
-AssetHolder-->ETHAssetHolder
-AssetHolder-->ERC20AssetHolder
-AssetHolder-->TESTAssetHolder
+IMultiAssetHolder--> MultiAssetHolder
+SafeMath-.-> MultiAssetHolder
+Outcome-.-> MultiAssetHolder
+MultiAssetHolder-->NitroAdjudicator
+IERC20.->MultiAssetHolder
 classDef Library fill:#ffffff,stroke:#656664,stroke-dasharray: 5 5
 classDef Contract fill:#ffffff,stroke:#656664;
 classDef DeployedContract fill:#ffffff,stroke:#3531ff,stroke-width:3px;
@@ -35,27 +30,13 @@ classDef Abstraction fill:#ffffff,stroke:#8dc404,stroke-dasharray: 5 5;
 classDef Interface fill:#ffffff,stroke:#de1065,stroke-dasharray: 5 5;
 classDef TestContract fill:#fafe4f,stroke-width:0px
 class SafeMath,Outcome Library;
-class IAssetHolder,IERC20 Interface;
-class AssetHolder,ETHAssetHolder,ERC20AssetHolder Contract;
-class TESTAssetHolder TestContract;
-class ETHAssetHolder,ERC20AssetHolder DeployedContract;
+class IMultiAssetHolder,IERC20 Interface;
+class MultiAssetHolder Contract;
 click SafeMath "/contract-api/natspec/SafeMath";
 click Outcome "/contract-api/natspec/Outcome";
-click AssetHolder "/contract-api/natspec/AssetHolder";
-click ERC20AssetHolder "/contract-api/natspec/ERC20AssetHolder";
-click ETHAssetHolder "/contract-api/natspec/ETHAssetHolder";
-click IAssetHolder "/contract-api/natspec/IAssetHolder";
-click TESTAssetHolder "/contract-api/natspec/TESTAssetHolder";
+click MultiAssetHolder "/contract-api/natspec/MultiAssetHolder";
+click IMultiAssetHolder "/contract-api/natspec/IMultiAssetHolder";
 click IERC20 "/contract-api/natspec/IERC20";
-'
-/>
-
-## Adjudication
-
-<Mermaid
-  chart='
-graph TD
-linkStyle default interpolate basis
 Outcome([Outcome])
 IAdjudicator
 IForceMove
@@ -67,9 +48,10 @@ IForceMoveApp-.-> ForceMove
 IForceMove--> ForceMove
 Outcome--> NitroAdjudicator
 IAdjudicator--> NitroAdjudicator
-ForceMove--> NitroAdjudicator
 ForceMove-->TESTForceMove
+ForceMove-->MultiAssetHolder
 NitroAdjudicator--> TESTNitroAdjudicator
+TESTForceMove--> TESTNitroAdjudicator
 classDef Contract fill:#ffffff,stroke:#656664;
 classDef DeployedContract fill:#ffffff,stroke:#3531ff,stroke-width:3px;
 classDef Abstraction fill:#ffffff,stroke:#8dc404,stroke-dasharray: 5 5

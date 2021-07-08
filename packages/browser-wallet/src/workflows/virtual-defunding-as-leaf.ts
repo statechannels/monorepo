@@ -14,8 +14,8 @@ import _ from 'lodash';
 import {ChannelLock} from '../store/store';
 import {Store} from '../store';
 import {getDataAndInvoke} from '../utils/helpers';
-import {ETH_ASSET_HOLDER_ADDRESS} from '../config';
 import {MessagingServiceInterface} from '../messaging';
+import {zeroAddress} from '../config';
 
 import {OutcomeIdx, ParticipantIdx} from './virtual-funding-as-leaf';
 
@@ -180,11 +180,7 @@ const releaseFundsFromBudget: StateNodeConfig<any, any, any> = {
 const releaseFunds = (store: Store, messagingService: MessagingServiceInterface) => async (
   context: ChannelsSet
 ) => {
-  const budget = await store.releaseFunds(
-    ETH_ASSET_HOLDER_ADDRESS,
-    context.ledgerId,
-    context.targetChannelId
-  );
+  const budget = await store.releaseFunds(zeroAddress, context.ledgerId, context.targetChannelId);
   await messagingService.sendBudgetNotification(budget);
 };
 

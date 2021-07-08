@@ -1,8 +1,8 @@
 import {constants} from 'ethers';
 import * as _ from 'lodash';
 
-import {DomainBudget, AssetBudget} from '../types';
-import {HUB_ADDRESS, ETH_ASSET_HOLDER_ADDRESS} from '../config';
+import {DomainBudget, AssetBudget, makeAddress} from '../types';
+import {HUB_ADDRESS, zeroAddress} from '../config';
 
 import {checkThat, exists} from './helpers';
 
@@ -11,9 +11,9 @@ export function ethBudget(domain: string, opts: Partial<AssetBudget>): DomainBud
     domain,
     hubAddress: HUB_ADDRESS,
     forAsset: {
-      [ETH_ASSET_HOLDER_ADDRESS]: _.assign(
+      [zeroAddress]: _.assign(
         {
-          assetHolderAddress: ETH_ASSET_HOLDER_ADDRESS,
+          asset: zeroAddress,
           availableReceiveCapacity: constants.Zero,
           availableSendCapacity: constants.Zero,
           channels: {}
@@ -25,7 +25,7 @@ export function ethBudget(domain: string, opts: Partial<AssetBudget>): DomainBud
 }
 
 export function forEthAsset(budget: DomainBudget): AssetBudget {
-  const ethPart = budget.forAsset[ETH_ASSET_HOLDER_ADDRESS];
+  const ethPart = budget.forAsset[makeAddress(constants.AddressZero)];
   if (!ethPart) throw 'No eth part!';
   return ethPart;
 }
@@ -35,5 +35,5 @@ export function extractEthAssetBudget(budget: DomainBudget): AssetBudget {
     throw new Error('Cannot handle mixed budget');
   }
 
-  return checkThat<AssetBudget>(budget.forAsset[ETH_ASSET_HOLDER_ADDRESS], exists);
+  return checkThat<AssetBudget>(budget.forAsset[zeroAddress], exists);
 }

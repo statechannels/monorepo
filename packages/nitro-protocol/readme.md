@@ -48,8 +48,6 @@ contract MyStateChannelApp is IForceMoveApp {
 ```typescript
 const {
   NitroAdjudicatorArtifact,
-  EthAssetHolderArtifact,
-  Erc20AssetHolderArtifact,
   TrivialAppArtifact,
   TokenArtifact,
 } = require('@statechannels/nitro-protocol').ContractArtifacts;

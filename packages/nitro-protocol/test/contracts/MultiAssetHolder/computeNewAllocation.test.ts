@@ -1,20 +1,19 @@
-import {Contract, BigNumber} from 'ethers';
+import {BigNumber} from 'ethers';
 import shuffle from 'lodash.shuffle';
 
-import {getTestProvider, setupContract, randomExternalDestination} from '../../test-helpers';
+import {getTestProvider, randomExternalDestination, setupContract} from '../../test-helpers';
+import {TESTNitroAdjudicator} from '../../../typechain/TESTNitroAdjudicator';
 // eslint-disable-next-line import/order
-import AssetHolderArtifact from '../../../artifacts/contracts/test/TESTAssetHolder.sol/TESTAssetHolder.json';
+import TESTNitroAdjudicatorArtifact from '../../../artifacts/contracts/test/TESTNitroAdjudicator.sol/TESTNitroAdjudicator.json';
 
-const provider = getTestProvider();
-
-let AssetHolder: Contract;
-
-beforeAll(async () => {
-  AssetHolder = setupContract(provider, AssetHolderArtifact, process.env.TEST_ASSET_HOLDER_ADDRESS);
-});
+const testNitroAdjudicator = (setupContract(
+  getTestProvider(),
+  TESTNitroAdjudicatorArtifact,
+  process.env.TEST_NITRO_ADJUDICATOR_ADDRESS
+) as unknown) as TESTNitroAdjudicator;
 
 import {AllocationItem} from '../../../src';
-import {computeNewAllocation} from '../../../src/contract/asset-holder';
+import {computeNewAllocation} from '../../../src/contract/multi-asset-holder';
 
 const randomAllocation = (numAllocationItems: number): AllocationItem[] => {
   return numAllocationItems > 0
@@ -29,7 +28,7 @@ const heldBefore = BigNumber.from(100).toHexString();
 const allocation = randomAllocation(Math.floor(Math.random() * 20));
 const indices = shuffle([...Array(allocation.length).keys()]); // [0, 1, 2, 3,...] but shuffled
 
-describe('AsserHolder._computeNewAllocation', () => {
+describe('AssetHolder._computeNewAllocation', () => {
   it(`matches on chain method for input \n heldBefore: ${heldBefore}, \n allocation: ${JSON.stringify(
     allocation,
     null,
@@ -38,11 +37,11 @@ describe('AsserHolder._computeNewAllocation', () => {
     // check local function works as expected
     const locallyComputedNewAllocation = computeNewAllocation(heldBefore, allocation, indices);
 
-    const result = (await AssetHolder._computeNewAllocation(
+    const result = await testNitroAdjudicator._computeNewAllocation(
       heldBefore,
       allocation,
       indices
-    )) as ReturnType<typeof computeNewAllocation>;
+    );
     expect(result).toBeDefined();
     expect(result.newAllocation).toMatchObject(
       locallyComputedNewAllocation.newAllocation.map(a => ({

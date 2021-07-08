@@ -18,7 +18,7 @@ import {constants as ethersConstants} from 'ethers';
 
 import {TestStore} from '../../test-store';
 import {ParticipantIdx} from '../virtual-funding-as-leaf';
-import {ETH_ASSET_HOLDER_ADDRESS, HUB} from '../../config';
+import {HUB, zeroAddress} from '../../config';
 import {MessagingServiceInterface, MessagingService} from '../../messaging';
 import {VirtualDefundingAsLeaf, VirtualDefundingAsHub} from '..';
 
@@ -160,8 +160,8 @@ const generateBudget = (ledgerAmounts): DomainBudget => ({
   domain: TEST_APP_DOMAIN,
   hubAddress: HUB.signingAddress,
   forAsset: {
-    [ETH_ASSET_HOLDER_ADDRESS]: {
-      assetHolderAddress: ETH_ASSET_HOLDER_ADDRESS,
+    [zeroAddress]: {
+      asset: zeroAddress,
       availableReceiveCapacity: ledgerAmounts[1],
       availableSendCapacity: ledgerAmounts[0],
       channels: {[targetChannelId]: {amount: totalTargetAmount}}
@@ -282,7 +282,7 @@ test('virtual defunding with a proper hub', async () => {
 
 async function expectBudgetIsUpdated(expectedLedgerAmounts: BN[], store: TestStore) {
   const budget = assumeNotUndefined(await store.getBudget(TEST_APP_DOMAIN));
-  const ethBudget = assumeNotUndefined(budget.forAsset[ETH_ASSET_HOLDER_ADDRESS]);
+  const ethBudget = assumeNotUndefined(budget.forAsset[ethersConstants.AddressZero]);
   expect(ethBudget.availableSendCapacity).toBe(expectedLedgerAmounts[1]);
   expect(ethBudget.availableReceiveCapacity).toBe(expectedLedgerAmounts[0]);
   expect(Object.keys(ethBudget.channels)).toHaveLength(0);

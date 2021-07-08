@@ -74,14 +74,14 @@ export function serializeOutcome(outcome: Outcome): OutcomeWire {
 
 function serializeSimpleAllocation(allocation: SimpleAllocation): AllocationWire {
   return {
-    assetHolderAddress: allocation.assetHolderAddress,
+    asset: allocation.asset,
     allocationItems: allocation.allocationItems.map(serializeAllocationItem)
   };
 }
 
 function serializeSimpleGuarantee(guarantee: SimpleGuarantee): GuaranteeWire {
   return {
-    assetHolderAddress: guarantee.assetHolderAddress,
+    asset: guarantee.asset,
     targetChannelId: guarantee.targetChannelId,
     destinations: guarantee.destinations
   };

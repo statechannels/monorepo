@@ -15,12 +15,12 @@
           },
           "type": "array"
         },
-        "assetHolderAddress": {
+        "asset": {
           "$ref": "#/definitions/Address"
         }
       },
       "required": [
-        "assetHolderAddress",
+        "asset",
         "allocationItems"
       ],
       "type": "object"
@@ -235,7 +235,7 @@
     "Guarantee": {
       "additionalProperties": false,
       "properties": {
-        "assetHolderAddress": {
+        "asset": {
           "$ref": "#/definitions/Address"
         },
         "destinations": {
@@ -249,7 +249,7 @@
         }
       },
       "required": [
-        "assetHolderAddress",
+        "asset",
         "targetChannelId",
         "destinations"
       ],

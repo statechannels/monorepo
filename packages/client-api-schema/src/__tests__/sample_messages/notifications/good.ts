@@ -26,7 +26,7 @@ const channelResult: ChannelResult = {
   ],
   allocations: [
     {
-      assetHolderAddress: '0x0000000000000000000000000000000000000000',
+      asset: '0x0000000000000000000000000000000000000000',
       allocationItems: [
         {
           destination: '0x63e3fb11830c01ac7c9c64091c14bb6cbaac9ac7',
@@ -110,7 +110,7 @@ const message = {
                 destination: '0x00000000000000000000000063e3fb11830c01ac7c9c64091c14bb6cbaac9ac7'
               }
             ],
-            assetHolderAddress: '0x4ad3F07BEFDC54511449A1f553E36A653c82eA57'
+            asset: '0x4ad3F07BEFDC54511449A1f553E36A653c82eA57'
           }
         ],
         turnNum: 0

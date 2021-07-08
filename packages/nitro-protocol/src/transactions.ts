@@ -1,4 +1,4 @@
-import {providers, Signature} from 'ethers';
+import {constants, providers, Signature} from 'ethers';
 
 import {State} from './contract/state';
 import * as forceMoveTrans from './contract/transaction-creators/force-move';
@@ -6,6 +6,7 @@ import * as nitroAdjudicatorTrans from './contract/transaction-creators/nitro-ad
 import {getStateSignerAddress, SignedState} from './signatures';
 
 // CONSTANTS
+export const MAGIC_ADDRESS_INDICATING_ETH = constants.AddressZero;
 export const MAX_TX_DATA_SIZE = 128 * 1024; // (bytes) https://github.com/ethereum/go-ethereum/blob/f59ed3565d18c1fa676fd34f4fd41ecccad707e8/core/tx_pool.go#L51
 export const NITRO_MAX_GAS = 6_000_000; // should be below the block gas limit, which can change over time and is generally different on mainnet, testnet and ganache.
 // sampling some recent blocks on 26/11/2020:
@@ -53,11 +54,11 @@ export function createCheckpointTransaction(
   });
 }
 
-export function createConcludePushOutcomeAndTransferAllTransaction(
+export function createConcludeAndTransferAllAssetsTransaction(
   signedStates: SignedState[]
 ): providers.TransactionRequest {
   const {states, signatures, whoSignedWhat} = createSignatureArguments(signedStates);
-  return nitroAdjudicatorTrans.createConcludePushOutcomeAndTransferAllTransaction(
+  return nitroAdjudicatorTrans.createConcludeAndTransferAllAssetsTransaction(
     states,
     signatures,
     whoSignedWhat
@@ -70,16 +71,6 @@ export function createConcludeTransaction(
   const {states, signatures, whoSignedWhat} = createSignatureArguments(conclusionProof);
   return forceMoveTrans.createConcludeTransaction(states, signatures, whoSignedWhat);
 }
-
-export const createPushOutcomeTransaction: (
-  arg: nitroAdjudicatorTrans.PushOutcomeTransactionArg
-) => providers.TransactionRequest = nitroAdjudicatorTrans.createPushOutcomeTransactionFactory(
-  false
-);
-
-export const createPushOutcomeAndTransferAllTransaction: (
-  arg: nitroAdjudicatorTrans.PushOutcomeTransactionArg
-) => providers.TransactionRequest = nitroAdjudicatorTrans.createPushOutcomeTransactionFactory(true);
 
 // Currently we assume each signedState is a unique combination of state/signature
 // So if multiple participants sign a state we expect a SignedState for each participant

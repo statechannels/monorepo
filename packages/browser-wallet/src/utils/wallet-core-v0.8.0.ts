@@ -10,12 +10,9 @@ import {
   AllocationItem,
   formatAmount,
   isAllocation,
-  MOCK_ASSET_HOLDER_ADDRESS,
   SimpleAllocation
 } from '@statechannels/wallet-core';
 
-import {ETH_ASSET_HOLDER_ADDRESS} from '../config';
-import {MOCK_TOKEN, ETH_TOKEN} from '../constants';
 import {ChannelStoreEntry} from '../store/channel-store-entry';
 
 export function serializeChannelEntry(channelEntry: ChannelStoreEntry): ChannelResult {
@@ -63,22 +60,10 @@ function serializeAllocation(allocation: Allocation): AppAllocations {
 }
 
 function serializeSimpleAllocation(allocation: SimpleAllocation): AppAllocation {
-  const assetHolderAddress = tokenAddress(allocation.assetHolderAddress);
-  if (!assetHolderAddress) {
-    throw new Error(`Can't find token address for asset holder ${allocation.assetHolderAddress}`);
-  }
-
   return {
     allocationItems: allocation.allocationItems.map(serializeAllocationItem),
-    assetHolderAddress
+    asset: allocation.asset
   };
-}
-
-function tokenAddress(assetHolderAddress: string): string {
-  if (assetHolderAddress === ETH_ASSET_HOLDER_ADDRESS) return ETH_TOKEN;
-  else if (assetHolderAddress === MOCK_ASSET_HOLDER_ADDRESS) return MOCK_TOKEN;
-
-  throw 'TokenAddress not found';
 }
 
 function serializeAllocationItem(allocationItem: AllocationItem): AppAllocationItem {

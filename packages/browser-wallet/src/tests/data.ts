@@ -9,7 +9,7 @@ import {
   makeAddress
 } from '@statechannels/wallet-core';
 
-import {CHALLENGE_DURATION, HUB, HUB_ADDRESS, ETH_ASSET_HOLDER_ADDRESS} from '../config';
+import {CHALLENGE_DURATION, HUB, HUB_ADDRESS, zeroAddress} from '../config';
 
 export const wallet1 = new ethers.Wallet(
   '0x95942b296854c97024ca3145abef8930bf329501b718c0f66d57dba596ff1318'
@@ -82,8 +82,8 @@ export const budget = (send: string, receive: string): DomainBudget => ({
   hubAddress: HUB_ADDRESS,
   domain: TEST_APP_DOMAIN,
   forAsset: {
-    [ETH_ASSET_HOLDER_ADDRESS]: {
-      assetHolderAddress: ETH_ASSET_HOLDER_ADDRESS,
+    [zeroAddress]: {
+      asset: zeroAddress,
       availableReceiveCapacity: BN.from(receive),
       availableSendCapacity: BN.from(send),
       channels: {}

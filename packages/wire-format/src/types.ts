@@ -36,14 +36,14 @@ export interface AllocationItem {
 }
 
 export interface Allocation {
-  assetHolderAddress: Address; // The asset holder address.
+  asset: Address; // The asset holder address.
   allocationItems: AllocationItem[]; // A list of allocations (how much funds will each destination address get).
 }
 
 export type Allocations = Allocation[]; // included for backwards compatibility
 
 export interface Guarantee {
-  assetHolderAddress: Address;
+  asset: Address;
   targetChannelId: Bytes32;
   destinations: Bytes32[];
 }

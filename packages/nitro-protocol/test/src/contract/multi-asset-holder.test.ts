@@ -1,4 +1,4 @@
-import {convertBytes32ToAddress} from '../../../src/contract/asset-holder';
+import {convertBytes32ToAddress} from '../../../src/contract/multi-asset-holder';
 
 describe('convertBytes32ToAddress', () => {
   it.each`

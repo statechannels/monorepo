@@ -40,7 +40,7 @@ export const wireStateFormat: WireState = {
           destination: '0x00000000000000000000000063E3FB11830c01ac7C9C64091c14Bb6CbAaC9Ac7'
         }
       ],
-      assetHolderAddress: '0x4ad3F07BEFDC54511449A1f553E36A653c82eA57'
+      asset: '0x4ad3F07BEFDC54511449A1f553E36A653c82eA57'
     }
   ],
   turnNum: 1,
@@ -54,7 +54,7 @@ const wireStateFormat2: WireState = {
   channelId: '0x583e42e295214b60ad730c15547584c11edb05032d92e4c781ad61d0c193a5fb',
   outcome: [
     {
-      assetHolderAddress: '0x4ad3F07BEFDC54511449A1f553E36A653c82eA57',
+      asset: '0x4ad3F07BEFDC54511449A1f553E36A653c82eA57',
       destinations: ['0x00000000000000000000000063E3FB11830c01ac7C9C64091c14Bb6CbAaC9Ac7'],
       targetChannelId: '0xb08bc94ebfbe1b23c419bec2d57993d33c41b112fbbca5d51f0f18194baadcf1'
     }
@@ -84,7 +84,7 @@ export const internalStateFormat: SignedState = {
   isFinal: false,
   outcome: {
     type: 'SimpleAllocation',
-    assetHolderAddress: makeAddress('0x4ad3F07BEFDC54511449A1f553E36A653c82eA57'),
+    asset: makeAddress('0x4ad3F07BEFDC54511449A1f553E36A653c82eA57'),
     allocationItems: [
       {
         amount: BN.from('0x00000000000000000000000000000000000000000000000006f05b59d3b20000'),
@@ -114,7 +114,7 @@ export const internalStateFormat2: SignedState = {
   ...internalStateFormat,
   channelNonce: internalStateFormat.channelNonce + 1,
   outcome: {
-    assetHolderAddress: makeAddress('0x4ad3F07BEFDC54511449A1f553E36A653c82eA57'),
+    asset: makeAddress('0x4ad3F07BEFDC54511449A1f553E36A653c82eA57'),
     type: 'SimpleGuarantee',
     targetChannelId: calculateChannelId(internalStateFormat),
     destinations: [makeDestination('0x63E3FB11830c01ac7C9C64091c14Bb6CbAaC9Ac7')]

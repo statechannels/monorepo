@@ -16,15 +16,8 @@ import {
   SignedStateHash,
   WaitingFor
 } from '../protocols/direct-funder';
-import {
-  Address,
-  makeAddress,
-  SignedState,
-  SimpleAllocation,
-  State,
-  StateWithHash,
-  Uint256
-} from '../types';
+import {makeAddress, SignedState, SimpleAllocation, State, StateWithHash, Uint256} from '../types';
+import {zeroAddress} from '../config';
 
 import {ONE_DAY, participants, signStateHelper} from './test-helpers';
 import {DeepPartial, fixture} from './fixture';
@@ -41,14 +34,14 @@ const deposits = {
   B: BN.from(5),
   total: BN.from(8)
 };
-const assetHolderAddress = makeAddress(AddressZero); // must be even length
+const asset = zeroAddress; // must be even length
 const outcome: SimpleAllocation = {
   type: 'SimpleAllocation',
   allocationItems: [
     {destination: participantA.destination, amount: deposits.A},
     {destination: participantB.destination, amount: deposits.B}
   ],
-  assetHolderAddress
+  asset
 };
 
 const openingState: State = {
@@ -56,7 +49,7 @@ const openingState: State = {
   chainId: '0x01',
   challengeDuration: ONE_DAY,
   channelNonce: 0,
-  appDefinition: ethers.constants.AddressZero as Address,
+  appDefinition: zeroAddress,
   appData: makeAddress(AddressZero), // must be even length
   turnNum: 0,
   outcome,
@@ -139,7 +132,7 @@ describe('initialization', () => {
 
     const outcome = {
       type: 'SimpleAllocation' as const,
-      assetHolderAddress: ethers.constants.AddressZero as any,
+      asset: zeroAddress,
       allocationItems: []
     };
     expect(() => initialize({...openingState, outcome}, 0)).toThrow('unexpected outcome');
@@ -165,7 +158,7 @@ describe('cranking', () => {
       ...openingState,
       outcome: {
         type: 'SimpleAllocation',
-        assetHolderAddress,
+        asset,
         allocationItems: [
           {destination: participants.A.destination, amount: BN.from(0)},
           {destination: participants.B.destination, amount: BN.from(0)}

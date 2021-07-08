@@ -14,7 +14,7 @@ import {
 const destination = utils.id('d');
 const targetChannelId = utils.id('t');
 const destinations = [destination];
-const assetHolderAddress = Wallet.createRandom().address;
+const asset = Wallet.createRandom().address;
 
 const guarantee: Guarantee = {
   targetChannelId,
@@ -23,8 +23,8 @@ const guarantee: Guarantee = {
 const allocationItems: AllocationItem[] = [{destination, amount: '0x05'}];
 
 const outcome = [
-  {assetHolderAddress, allocationItems},
-  {assetHolderAddress, guarantee},
+  {asset, allocationItems},
+  {asset, guarantee},
 ];
 const emptyOutcome = [];
 

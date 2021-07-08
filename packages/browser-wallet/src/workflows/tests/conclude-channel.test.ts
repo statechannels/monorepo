@@ -1,5 +1,4 @@
 import {interpret} from 'xstate';
-import {constants} from 'ethers';
 import {
   firstState,
   calculateChannelId,
@@ -14,7 +13,7 @@ import {
 import {Store} from '../../store';
 import {FakeChain} from '../../chain';
 import {TestStore} from '../../test-store';
-import {ETH_ASSET_HOLDER_ADDRESS, HUB} from '../../config';
+import {HUB, zeroAddress} from '../../config';
 import {machine as concludeChannel} from '../conclude-channel';
 import {Init, machine as createChannel} from '../create-and-fund';
 import {MessagingService} from '../../messaging';
@@ -39,7 +38,7 @@ jest.setTimeout(20000);
 const {add} = BN;
 const chainId = '0x01';
 const challengeDuration = 10;
-const appDefinition = constants.AddressZero;
+const appDefinition = zeroAddress;
 
 const targetChannel: ChannelConstants = {
   channelNonce: 0,
@@ -60,7 +59,7 @@ const depositAmount = ledgerAmounts.reduce(add);
 
 const allocation: Outcome = {
   type: 'SimpleAllocation',
-  assetHolderAddress: ETH_ASSET_HOLDER_ADDRESS,
+  asset: zeroAddress,
   allocationItems: [0, 1].map(i => ({
     destination: destinations[i],
     amount: amounts[i]

@@ -479,11 +479,7 @@ export class Store {
       this.backend.deleteBudget(domain)
     );
 
-  public releaseFunds = (
-    assetHolderAddress: string,
-    ledgerChannelId: string,
-    targetChannelId: string
-  ) =>
+  public releaseFunds = (asset: string, ledgerChannelId: string, targetChannelId: string) =>
     this.backend.transaction(
       'readwrite',
       [ObjectStores.budgets, ObjectStores.channels, ObjectStores.privateKeys],
@@ -494,7 +490,7 @@ export class Store {
 
         const currentBudget = await this.getBudget(applicationDomain);
 
-        const assetBudget = currentBudget?.forAsset[assetHolderAddress];
+        const assetBudget = currentBudget?.forAsset[asset];
 
         if (!currentBudget || !assetBudget) throw Error(Errors.noBudget);
 
@@ -520,7 +516,7 @@ export class Store {
     );
 
   public reserveFunds = (
-    assetHolderAddress: string,
+    asset: string,
     channelId: string,
     amount: {send: Uint256; receive: Uint256}
   ) =>
@@ -536,7 +532,7 @@ export class Store {
         // TODO?: Create a new budget if one doesn't exist
         if (!currentBudget) throw Error(Errors.noBudget + domain);
 
-        const assetBudget = currentBudget?.forAsset[assetHolderAddress];
+        const assetBudget = currentBudget?.forAsset[asset];
         if (!assetBudget) throw Error(Errors.noAssetBudget);
 
         if (
@@ -546,7 +542,7 @@ export class Store {
           throw Error(Errors.budgetInsufficient);
         }
 
-        currentBudget.forAsset[assetHolderAddress] = {
+        currentBudget.forAsset[asset] = {
           ...assetBudget,
           availableSendCapacity: BN.sub(assetBudget.availableSendCapacity, amount.send),
           availableReceiveCapacity: BN.sub(assetBudget.availableReceiveCapacity, amount.receive),

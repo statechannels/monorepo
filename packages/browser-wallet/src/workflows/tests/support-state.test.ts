@@ -7,17 +7,15 @@ import {
   Outcome,
   State,
   SignedState,
-  BN,
-  makeAddress
+  BN
 } from '@statechannels/wallet-core';
-import {constants} from 'ethers';
 
 import {Store} from '../../store';
 import {FakeChain} from '../../chain';
 import {TestStore} from '../../test-store';
-import {ETH_ASSET_HOLDER_ADDRESS} from '../../config';
 import {machine as concludeChannel} from '../conclude-channel';
 import {Init, machine as createChannel} from '../create-and-fund';
+import {zeroAddress} from '../../config';
 
 import {subscribeToMessages} from './message-service';
 import {wallet1, wallet2, participants, TEST_APP_DOMAIN} from './data';
@@ -26,7 +24,7 @@ jest.setTimeout(5000);
 
 const chainId = '0x01';
 const challengeDuration = 10;
-const appDefinition = makeAddress(constants.AddressZero);
+const appDefinition = zeroAddress;
 
 const targetChannel: ChannelConstants = {
   channelNonce: 0,
@@ -43,7 +41,7 @@ const amounts = [BN.from(7), BN.from(5)];
 
 const allocation: Outcome = {
   type: 'SimpleAllocation',
-  assetHolderAddress: ETH_ASSET_HOLDER_ADDRESS,
+  asset: zeroAddress,
   allocationItems: [0, 1].map(i => ({
     destination: destinations[i],
     amount: amounts[i]

@@ -86,9 +86,7 @@ describe('validTransition', () => {
       Object.keys(balancesA).forEach(key =>
         allocationA.push({destination: key, amount: balancesA[key]})
       );
-      const outcomeA = [
-        {assetHolderAddress: ethers.constants.AddressZero, allocationItems: allocationA},
-      ];
+      const outcomeA = [{asset: ethers.constants.AddressZero, allocationItems: allocationA}];
       const variablePartA: VariablePart = {
         outcome: encodeOutcome(outcomeA),
         appData: encodeHashLockedSwapData(dataA),
@@ -98,9 +96,7 @@ describe('validTransition', () => {
       Object.keys(balancesB).forEach(key =>
         allocationB.push({destination: key, amount: balancesB[key]})
       );
-      const outcomeB = [
-        {assetHolderAddress: ethers.constants.AddressZero, allocationItems: allocationB},
-      ];
+      const outcomeB = [{asset: ethers.constants.AddressZero, allocationItems: allocationB}];
       const variablePartB: VariablePart = {
         outcome: encodeOutcome(outcomeB),
         appData: encodeHashLockedSwapData(dataB),

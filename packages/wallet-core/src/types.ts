@@ -17,7 +17,7 @@ interface ChannelBudgetEntry {
   amount: Uint256;
 }
 export interface AssetBudget {
-  assetHolderAddress: string;
+  asset: string;
   availableReceiveCapacity: Uint256;
   availableSendCapacity: Uint256;
   channels: Record<string, ChannelBudgetEntry>;
@@ -43,13 +43,13 @@ export interface AllocationItem {
 }
 export interface SimpleAllocation {
   type: 'SimpleAllocation';
-  assetHolderAddress: Address;
+  asset: Address;
   allocationItems: AllocationItem[];
 }
 export interface SimpleGuarantee {
   type: 'SimpleGuarantee';
   targetChannelId: string;
-  assetHolderAddress: Address;
+  asset: Address;
   destinations: string[];
 }
 export interface MixedAllocation {

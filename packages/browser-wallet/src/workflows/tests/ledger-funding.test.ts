@@ -10,16 +10,14 @@ import {
   Outcome,
   State,
   SignedState,
-  BN,
-  makeAddress
+  BN
 } from '@statechannels/wallet-core';
 import _ from 'lodash';
-import {constants} from 'ethers';
 
 import {FakeChain, Chain} from '../../chain';
 import {TestStore} from '../../test-store';
-import {ETH_ASSET_HOLDER_ADDRESS} from '../../config';
 import {Init, machine, Errors} from '../ledger-funding';
+import {zeroAddress} from '../../config';
 
 import {wallet1, wallet2, participants} from './data';
 import {subscribeToMessages} from './message-service';
@@ -30,7 +28,7 @@ const EXPECT_TIMEOUT = process.env.CI ? 9500 : 2000;
 
 const chainId = '0x01';
 const challengeDuration = 10;
-const appDefinition = makeAddress(constants.AddressZero);
+const appDefinition = zeroAddress;
 
 const targetChannel: ChannelConstants = {
   channelNonce: 0,
@@ -55,7 +53,7 @@ const amounts = [BN.from(7), BN.from(5)];
 const deductionAmounts = [BN.from(3), BN.from(2)];
 const outcome: Outcome = {
   type: 'SimpleAllocation',
-  assetHolderAddress: ETH_ASSET_HOLDER_ADDRESS,
+  asset: zeroAddress,
   allocationItems: [0, 1].map(i => ({
     destination: destinations[i],
     amount: amounts[i]
@@ -177,7 +175,7 @@ describe('failure modes', () => {
   const fiveTotalAllocated: Data = {
     ledgerOutcome: {
       type: 'SimpleAllocation',
-      assetHolderAddress: ETH_ASSET_HOLDER_ADDRESS,
+      asset: zeroAddress,
       allocationItems: [0, 1].map(i => ({
         destination: destinations[i],
         amount: BN.sub(deductionAmounts[i], 1)

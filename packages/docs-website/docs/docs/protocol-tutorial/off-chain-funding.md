@@ -43,7 +43,7 @@ const sixEachStatePreFS: State = {
   channel: ledgerChannel,
   outcome: [
     {
-      assetHolderAddress: ETH_ASSET_HOLDER_ADDRESS,
+      asset: MAGIC_ADDRESS_INDICATING_ETH,
       allocationItems: [
         {destination: myDestination, amount: parseUnits('6', 'wei').toHexString()},
         {destination: hubDestination, amount: parseUnits('6', 'wei').toHexString()}
@@ -115,7 +115,7 @@ const threeEachStatePreFS: State = {
   channel: applicationChannel1,
   outcome: [
     {
-      assetHolderAddress: ETH_ASSET_HOLDER_ADDRESS,
+      asset: MAGIC_ADDRESS_INDICATING_ETH,
       allocationItems: [
         {destination: myDestination, amount: parseUnits('3', 'wei').toHexString()},
         {destination: hubDestination, amount: parseUnits('3', 'wei').toHexString()}
@@ -170,7 +170,7 @@ const threeEachAndSixForTheApp: State = {
   channel: ledgerChannel,
   outcome: [
     {
-      assetHolderAddress: ETH_ASSET_HOLDER_ADDRESS,
+      asset: MAGIC_ADDRESS_INDICATING_ETH,
       allocationItems: [
         {destination: myDestination, amount: parseUnits('3', 'wei').toHexString()},
         {destination: hubDestination, amount: parseUnits('3', 'wei').toHexString()},
@@ -234,7 +234,7 @@ const sixForMe: State = {
   channel: applicationChannel1,
   outcome: [
     {
-      assetHolderAddress: ETH_ASSET_HOLDER_ADDRESS,
+      asset: MAGIC_ADDRESS_INDICATING_ETH,
       allocationItems: [{destination: myDestination, amount: parseUnits('6', 'wei').toHexString()}]
     }
   ],
@@ -280,7 +280,7 @@ const nineForMeThreeForTheHub: State = {
   channel: ledgerChannel,
   outcome: [
     {
-      assetHolderAddress: ETH_ASSET_HOLDER_ADDRESS,
+      asset: MAGIC_ADDRESS_INDICATING_ETH,
       allocationItems: [
         {destination: myDestination, amount: parseUnits('9', 'wei').toHexString()},
         {destination: hubDestination, amount: parseUnits('3', 'wei').toHexString()}

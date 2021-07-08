@@ -2,13 +2,13 @@ import {Allocations} from '@statechannels/client-api-schema';
 import {utils} from 'ethers';
 
 import {SimpleAllocation, MixedAllocation, makeAddress} from '../../types';
-import {ETH_ASSET_HOLDER_ADDRESS} from '../../config';
 import {makeDestination} from '../../utils';
 import {BN} from '../../bignumber';
+import {zeroAddress} from '../../config';
 
 export const externalEthAllocation: Allocations = [
   {
-    assetHolderAddress: ETH_ASSET_HOLDER_ADDRESS,
+    asset: zeroAddress,
     allocationItems: [
       {
         amount: utils.hexZeroPad('0x5', 32),
@@ -26,7 +26,7 @@ export const externalEthAllocation: Allocations = [
 // since BigNumber.from('0x1') ~= BigNumber.from('0x01')
 // We should probably just a jest matcher instead
 export const internalEthAllocation: SimpleAllocation = {
-  assetHolderAddress: ETH_ASSET_HOLDER_ADDRESS,
+  asset: zeroAddress,
   allocationItems: [
     {
       amount: BN.from(utils.hexZeroPad('0x5', 32)),
@@ -43,7 +43,7 @@ export const internalEthAllocation: SimpleAllocation = {
 export const externalMixedAllocation: Allocations = [
   externalEthAllocation[0],
   {
-    assetHolderAddress: '0x1000000000000000000000000000000000000001',
+    asset: '0x1000000000000000000000000000000000000001',
     allocationItems: [
       {
         amount: utils.hexZeroPad('0x1', 32),
@@ -70,7 +70,7 @@ export const internalMixedAllocation: MixedAllocation = {
     internalEthAllocation,
     {
       type: 'SimpleAllocation',
-      assetHolderAddress: makeAddress('0x1000000000000000000000000000000000000001'),
+      asset: makeAddress('0x1000000000000000000000000000000000000001'),
       allocationItems: [
         {
           amount: BN.from(utils.hexZeroPad('0x1', 32)),

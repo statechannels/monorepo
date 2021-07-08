@@ -312,7 +312,7 @@ export function computeOutcome(outcomeShortHand: OutcomeShortHand): AllocationAs
       })
     );
     const assetOutcome: AllocationAssetOutcome = {
-      assetHolderAddress: assetHolder,
+      asset: assetHolder,
       allocationItems: allocation,
     }; // TODO handle gurantee outcomes
     outcome.push(assetOutcome);
@@ -338,7 +338,7 @@ export function getRandomNonce(seed: string): number {
 
 export const largeOutcome = (
   numAllocationItems: number,
-  assetHolderAddress: string = ethers.Wallet.createRandom().address
+  asset: string = ethers.Wallet.createRandom().address
 ): AllocationAssetOutcome[] => {
   const randomDestination = randomExternalDestination();
   return numAllocationItems > 0
@@ -348,7 +348,7 @@ export const largeOutcome = (
             destination: randomDestination,
             amount: '0x01',
           }),
-          assetHolderAddress,
+          asset,
         },
       ]
     : [];

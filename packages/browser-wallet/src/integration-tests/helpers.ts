@@ -184,7 +184,7 @@ export function generatePlayerUpdate(
       appData: '0x00',
       allocations: [
         {
-          assetHolderAddress: '0x0000000000000000000000000000000000000000',
+          asset: '0x0000000000000000000000000000000000000000',
           allocationItems: [
             {
               destination: playerA.destination,
@@ -217,7 +217,7 @@ export function generateCreateChannelRequest(
       participants: [playerA, playerB],
       allocations: [
         {
-          assetHolderAddress: utils.hexZeroPad('0x00', 32),
+          asset: utils.hexZeroPad('0x00', 32),
           allocationItems: [
             {
               destination: playerA.destination,
@@ -247,7 +247,7 @@ export function generateApproveBudgetAndFundRequest(
     id: 88888888,
     method: 'ApproveBudgetAndFund',
     params: {
-      assetHolderAddress: ETH_TOKEN,
+      asset: ETH_TOKEN,
       hub,
       playerParticipantId: player.participantId,
       requestedSendCapacity: utils.hexZeroPad('0x5', 32),

@@ -70,13 +70,11 @@ describe('validTransition', () => {
       );
       let outcomeA;
       if (isAllocation[0]) {
-        outcomeA = [
-          {assetHolderAddress: ethers.constants.AddressZero, allocationItems: allocationA},
-        ];
+        outcomeA = [{asset: ethers.constants.AddressZero, allocationItems: allocationA}];
       } else {
         outcomeA = [
           {
-            assetHolderAddress: ethers.constants.AddressZero,
+            asset: ethers.constants.AddressZero,
             guarantee,
           },
         ];
@@ -99,11 +97,9 @@ describe('validTransition', () => {
 
       let outcomeB;
       if (isAllocation[1]) {
-        outcomeB = [
-          {assetHolderAddress: ethers.constants.AddressZero, allocationItems: allocationB},
-        ];
+        outcomeB = [{asset: ethers.constants.AddressZero, allocationItems: allocationB}];
       } else {
-        outcomeB = [{assetHolderAddress: ethers.constants.AddressZero, guarantee}];
+        outcomeB = [{asset: ethers.constants.AddressZero, guarantee}];
       }
       if (numAssets[1] === 2) {
         outcomeB.push(outcomeB[0]);

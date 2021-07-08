@@ -17,7 +17,7 @@ import {utils} from 'ethers';
 
 import {ApproveBudgetAndFundService} from '../../workflows/approve-budget-and-fund';
 import {track} from '../../segment-analytics';
-import {ETH_ASSET_HOLDER_ADDRESS, TARGET_NETWORK, FAUCET_LINK} from '../../config';
+import {NITRO_ADJUDICATOR_ADDRESS, TARGET_NETWORK, FAUCET_LINK} from '../../config';
 import {getAmountsFromBudget} from '../selectors';
 interface Props {
   service: ApproveBudgetAndFundService;
@@ -151,7 +151,7 @@ export const ApproveBudgetAndFund = (props: Props) => {
         Click{' '}
         <Link
           target="_blank"
-          href={`https://${TARGET_NETWORK}.etherscan.io/address/${ETH_ASSET_HOLDER_ADDRESS}`}
+          href={`https://${TARGET_NETWORK}.etherscan.io/address/${NITRO_ADJUDICATOR_ADDRESS}`}
         >
           here
         </Link>{' '}
@@ -228,7 +228,7 @@ export const ApproveBudgetAndFund = (props: Props) => {
         You can click{' '}
         <Link
           target="_blank"
-          href={`https://${TARGET_NETWORK}.etherscan.io/address/${ETH_ASSET_HOLDER_ADDRESS}`}
+          href={`https://${TARGET_NETWORK}.etherscan.io/address/${NITRO_ADJUDICATOR_ADDRESS}`}
         >
           here
         </Link>{' '}

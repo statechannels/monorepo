@@ -1,4 +1,4 @@
-import {constants} from 'ethers';
+import {constants, ethers} from 'ethers';
 import {Address, Destination, makeAddress} from '@statechannels/wallet-core';
 
 // TODO: Use getEnvBool from devtools once working
@@ -28,9 +28,7 @@ export const INFURA_API_KEY: string | undefined = process.env.INFURA_API_KEY;
 
 export const CLEAR_STORAGE_ON_START = getBool(process.env.CLEAR_STORAGE_ON_START);
 
-export const ETH_ASSET_HOLDER_ADDRESS: Address = makeAddress(
-  process.env.ETH_ASSET_HOLDER_ADDRESS || constants.AddressZero
-);
+export const zeroAddress = makeAddress(ethers.constants.AddressZero);
 
 export const HUB_PARTICIPANT_ID = 'firebase:simple-hub';
 

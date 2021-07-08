@@ -12,6 +12,7 @@ import {
   SupportProof,
 } from '../../../../src/contract/embedded-application';
 import {getTestProvider, setupContract} from '../../../test-helpers';
+import {MAGIC_ADDRESS_INDICATING_ETH} from '../../../../lib/test/test-helpers';
 
 type RevertReason =
   // each reason represents a distinct code path that we should check in this test
@@ -57,7 +58,7 @@ async function expectRevert(fn: () => void, reason: RevertReason) {
 function absorbOutcomeOfXIntoJ(xOutcome: [AllocationAssetOutcome]) {
   return [
     {
-      assetHolderAddress: xOutcome[0].assetHolderAddress,
+      asset: xOutcome[0].asset,
       allocationItems: [
         {
           destination: xOutcome[0].allocationItems[0].destination,
@@ -86,7 +87,7 @@ const Irene = Wallet.createRandom();
 
 const sixFour: [AllocationAssetOutcome] = [
   {
-    assetHolderAddress: process.env.ETH_ASSET_HOLDER_ADDRESS,
+    asset: MAGIC_ADDRESS_INDICATING_ETH,
     allocationItems: [
       {destination: convertAddressToBytes32(Alice.address), amount: '0x6'},
       {destination: convertAddressToBytes32(Bob.address), amount: '0x4'},
@@ -95,7 +96,7 @@ const sixFour: [AllocationAssetOutcome] = [
 ];
 const fourSix: [AllocationAssetOutcome] = [
   {
-    assetHolderAddress: process.env.ETH_ASSET_HOLDER_ADDRESS,
+    asset: process.env.MAGIC_ADDRESS_INDICATING_ETH,
     allocationItems: [
       {destination: convertAddressToBytes32(Alice.address), amount: '0x4'},
       {destination: convertAddressToBytes32(Bob.address), amount: '0x6'},

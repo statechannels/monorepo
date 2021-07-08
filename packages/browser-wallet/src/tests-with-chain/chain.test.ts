@@ -13,29 +13,28 @@ import {Store} from '../store';
 import {ChainWatcher, FakeChain} from '../chain';
 import {Player} from '../integration-tests/helpers';
 import {
-  ETH_ASSET_HOLDER_ADDRESS,
   CHAIN_NETWORK_ID,
   CHALLENGE_DURATION,
+  NITRO_ADJUDICATOR_ADDRESS,
   TRIVIAL_APP_ADDRESS
 } from '../config';
 
 jest.setTimeout(10_000);
 
+const provider = new providers.JsonRpcProvider(`http://localhost:${process.env.GANACHE_PORT}`);
+
 const chain = new ChainWatcher();
 const store = new Store(chain);
 
-const provider = new providers.JsonRpcProvider(`http://localhost:${process.env.GANACHE_PORT}`);
-
-let ETHAssetHolder: Contract;
+let NitroAdjudicator: Contract;
 
 beforeAll(async () => {
   (window as any).ethereum = {enable: () => ['0xfec44e15328B7d1d8885a8226b0858964358F1D6']};
-  chain.ethereumEnable();
-
+  await chain.ethereumEnable();
   const signer = await provider.getSigner('0x28bF45680cA598708E5cDACc1414FCAc04a3F1ed');
-  ETHAssetHolder = new Contract(
-    ETH_ASSET_HOLDER_ADDRESS,
-    ContractArtifacts.EthAssetHolderArtifact.abi,
+  NitroAdjudicator = new Contract(
+    NITRO_ADJUDICATOR_ADDRESS,
+    ContractArtifacts.NitroAdjudicatorArtifact.abi,
     signer
   );
 });
@@ -48,7 +47,7 @@ it.skip('subscribes to chainUpdateFeed via a subscribeDepositEvent Observable, a
     .pipe(first(info => BN.eq(info.amount, 1)))
     .toPromise();
 
-  ETHAssetHolder.deposit(
+  NitroAdjudicator.deposit(
     channelId, // destination
     utils.parseUnits('0', 'wei'), // expectedHeld
     utils.parseUnits('1', 'wei'), // amount

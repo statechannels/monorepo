@@ -803,20 +803,36 @@ contract ForceMove is IForceMove {
         // logical or with the last 160 bits of the hash the remaining channelData fields
         // (we call this the fingerprint)
         result |= uint256(
-            uint160(
-                uint256(
-                    keccak256(
-                        abi.encode(
-                            channelData.stateHash,
-                            channelData.challengerAddress,
-                            channelData.outcomeHash
-                        )
-                    )
-                )
+            _generateFingerprint(
+                channelData.stateHash,
+                channelData.challengerAddress,
+                channelData.outcomeHash
             )
         );
 
         status = bytes32(result);
+    }
+
+    function _generateFingerprint(
+        bytes32 stateHash,
+        address challengerAddress,
+        bytes32 outcomeHash
+    ) internal pure returns (uint160) {
+        return uint160(uint256(keccak256(abi.encode(stateHash, challengerAddress, outcomeHash))));
+    }
+
+    function _updateFingerprint(
+        bytes32 channelId,
+        bytes32 stateHash,
+        address challengerAddress,
+        bytes32 outcomeHash
+    ) internal {
+        (uint48 turnNumRecord, uint48 finalizesAt, ) = _unpackStatus(channelId);
+
+        bytes32 newStatus = _generateStatus(
+            ChannelData(turnNumRecord, finalizesAt, stateHash, challengerAddress, outcomeHash)
+        );
+        statusOf[channelId] = newStatus;
     }
 
     /**

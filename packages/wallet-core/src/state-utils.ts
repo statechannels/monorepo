@@ -122,7 +122,7 @@ export function statesEqual(left: State, right: State): boolean {
 
 function simpleAllocationsEqual(left: SimpleAllocation, right: SimpleAllocation) {
   return (
-    left.assetHolderAddress === right.assetHolderAddress &&
+    left.asset === right.asset &&
     left.allocationItems.length === right.allocationItems.length &&
     _.every(
       left.allocationItems,
@@ -187,14 +187,14 @@ export function convertToNitroOutcome(outcome: Outcome): NitroOutcome {
     case 'SimpleAllocation':
       return [
         {
-          assetHolderAddress: outcome.assetHolderAddress,
+          asset: outcome.asset,
           allocationItems: convertToNitroAllocationItems(outcome.allocationItems)
         }
       ];
     case 'SimpleGuarantee':
       return [
         {
-          assetHolderAddress: outcome.assetHolderAddress,
+          asset: outcome.asset,
           guarantee: {
             targetChannelId: outcome.targetChannelId,
             destinations: outcome.destinations
@@ -214,7 +214,7 @@ export function fromNitroOutcome(outcome: NitroOutcome): Outcome {
   if (typeof singleOutcomeItem['allocationItems'] !== 'undefined') {
     return {
       type: 'SimpleAllocation',
-      assetHolderAddress: makeAddress(singleOutcomeItem.assetHolderAddress),
+      asset: makeAddress(singleOutcomeItem.asset),
       allocationItems: convertFromNitroAllocationItems(singleOutcomeItem['allocationItems'])
     };
   }
@@ -222,7 +222,7 @@ export function fromNitroOutcome(outcome: NitroOutcome): Outcome {
   if (typeof singleOutcomeItem['guarantee'] !== 'undefined') {
     return {
       type: 'SimpleGuarantee',
-      assetHolderAddress: makeAddress(singleOutcomeItem.assetHolderAddress),
+      asset: makeAddress(singleOutcomeItem.asset),
       targetChannelId: singleOutcomeItem['guarantee'].targetChannelId,
       destinations: singleOutcomeItem['guarantee'].destinations
     };

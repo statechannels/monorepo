@@ -20,7 +20,7 @@ import {
 } from '@statechannels/wallet-core';
 
 import {Store} from '../store';
-import {CHALLENGE_DURATION, HUB, ETH_ASSET_HOLDER_ADDRESS} from '../config';
+import {CHALLENGE_DURATION, HUB, zeroAddress} from '../config';
 import {MessagingServiceInterface} from '../messaging';
 import {getDataAndInvoke} from '../utils';
 
@@ -108,7 +108,7 @@ const reserveFunds = (
   const receive = allocationItems.find(a => a.destination !== playerDestination)?.amount || Zero;
   const send = allocationItems.find(a => a.destination === playerDestination)?.amount || Zero;
 
-  const budget = await store.reserveFunds(ETH_ASSET_HOLDER_ADDRESS, context.channelId, {
+  const budget = await store.reserveFunds(zeroAddress, context.channelId, {
     receive,
     send
   });

@@ -55,14 +55,14 @@ const deposits = {
   total: BN.from(8)
 };
 
-const assetHolderAddress = makeAddress(addressZero); // must be even length
+const asset = makeAddress(addressZero); // must be even length
 const outcome: SimpleAllocation = {
   type: 'SimpleAllocation',
   allocationItems: [
     {destination: participants.A.destination, amount: deposits.A},
     {destination: participants.B.destination, amount: deposits.B}
   ],
-  assetHolderAddress
+  asset
 };
 
 const openingState: State = {

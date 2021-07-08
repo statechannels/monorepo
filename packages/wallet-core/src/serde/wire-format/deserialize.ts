@@ -128,7 +128,7 @@ export function deserializeOutcome(outcome: OutcomeWire): Outcome {
       return {
         type: 'SimpleGuarantee',
         ...outcome[0],
-        assetHolderAddress: makeAddress(outcome[0].assetHolderAddress)
+        asset: makeAddress(outcome[0].asset)
       };
     }
   }
@@ -137,10 +137,10 @@ export function deserializeOutcome(outcome: OutcomeWire): Outcome {
 }
 
 function deserializeAllocation(allocation: AllocationWire): SimpleAllocation {
-  const {assetHolderAddress, allocationItems} = allocation;
+  const {asset, allocationItems} = allocation;
   return {
     type: 'SimpleAllocation',
-    assetHolderAddress: makeAddress(assetHolderAddress),
+    asset: makeAddress(asset),
     allocationItems: allocationItems.map(deserializeAllocationItem)
   };
 }
