@@ -1,6 +1,6 @@
 import {Signature} from '@ethersproject/bytes';
 import {Wallet} from '@ethersproject/wallet';
-import {constants, ContractReceipt, ethers} from 'ethers';
+import {ContractReceipt, ethers} from 'ethers';
 
 import {
   Allocation,

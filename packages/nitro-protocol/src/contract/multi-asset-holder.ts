@@ -12,7 +12,7 @@ import {
   Guarantee,
   Outcome,
 } from './outcome';
-import {Address, Bytes32} from './types';
+import {Address, Bytes32, Uint256} from './types';
 
 export interface DepositedEvent {
   destination: string;
@@ -172,14 +172,14 @@ export function computeNewAllocation(
 
 /**
  *
- * Takes a FingerprintUpdated Event and the transaction that emittted it, and returns updated information in a convenient format.
+ * Takes a AllocationUpdated Event and the transaction that emittted it, and returns updated information in a convenient format.
  * @param nitroAdjudicatorAddress
  * @param allocationUpdatedEvent
  * @param tx Transaction which gave rise to the event
  */
 export function computeNewOutcome(
   nitroAdjudicatorAddress: Address,
-  allocationUpdatedEvent: {channelId: Bytes32; initialHoldings: string},
+  allocationUpdatedEvent: {channelId: Bytes32; assetIndex: Uint256; initialHoldings: string},
   tx: ethers.Transaction
 ): {
   newOutcome: Outcome;
@@ -188,11 +188,8 @@ export function computeNewOutcome(
   internalPayouts: AllocationItem[];
 } {
   // Extract the calldata that we need
-  const {oldOutcome, assetIndex, indices, guarantee} = extractOldOutcomeAndIndices(
-    nitroAdjudicatorAddress,
-    tx
-  );
-
+  const {oldOutcome, indices, guarantee} = extractOldOutcomeAndIndices(nitroAdjudicatorAddress, tx);
+  const assetIndex = BigNumber.from(allocationUpdatedEvent.assetIndex).toNumber();
   const oldAllocation = (oldOutcome[assetIndex] as AllocationAssetOutcome).allocationItems;
 
   // Use the emulated, pure solidity functions to figure out what the chain will have done
@@ -236,7 +233,7 @@ export function computeNewOutcome(
 }
 
 /**
- * Extracts the outcome, assetIndex and indices that were submitted in the calldata of the supplied transaction, which targeted a method on the Adjudicator giving rise to a FingerprintUpdated event.
+ * Extracts the outcome, assetIndex and indices that were submitted in the calldata of the supplied transaction, which targeted a method on the Adjudicator giving rise to a AllocationUpdated event.
  * @param nitroAdjudicatorAddress
  * @param tx Transaction which contained the allocation and indices
  */

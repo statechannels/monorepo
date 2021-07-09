@@ -160,8 +160,9 @@ describe('transferAllAssets', () => {
       } else {
         const {events: eventsFromTx} = await (await tx1).wait();
 
-        // we expect a single FingerprintUpdated event.
-        expect(eventsFromTx[0].event).toEqual('FingerprintUpdated');
+        // expect an event per asset
+        expect(eventsFromTx[0].event).toEqual('AllocationUpdated');
+        expect(eventsFromTx[2].event).toEqual('AllocationUpdated'); // skip out the erc20 transfer event in slot 1
 
         // Check new status
         const outcomeAfter: Outcome = computeOutcome(newOutcome);

@@ -464,7 +464,7 @@ export class ChainWatcher implements Chain {
       }))
     );
 
-    const assetTransferEvents = fromEvent(this._adjudicator, 'FingerprintUpdated').pipe(
+    const assetTransferEvents = fromEvent(this._adjudicator, 'AllocationUpdated').pipe(
       // TODO: Type event correctly, use ethers-utils.js
       filter((event: Array<string | Uint256>) => BN.eq(event[0], channelId)),
       // Actually ignores the event data and just polls the chain

@@ -36,7 +36,7 @@ import {
   SyncConfiguration,
 } from '../engine';
 import {
-  FingerprintUpdatedArg,
+  AllocationUpdatedArg,
   ChainEventSubscriberInterface,
   ChainService,
   ChainServiceInterface,
@@ -137,7 +137,7 @@ export class Wallet extends EventEmitter<WalletEvents> {
       holdingUpdated: this.createChainEventlistener('holdingUpdated', e =>
         this._engine.store.updateFunding(e.channelId, e.amount, e.asset)
       ),
-      fingerprintUpdated: this.createChainEventlistener('fingerprintUpdated', async e => {
+      allocationUpdated: this.createChainEventlistener('allocationUpdated', async e => {
         const transferredOut = e.externalPayouts.map(ai => ({
           toAddress: makeDestination(ai.destination),
           amount: ai.amount as Uint256,
@@ -433,10 +433,7 @@ export class Wallet extends EventEmitter<WalletEvents> {
     EH extends ChainEventSubscriberInterface[K]
   >(eventName: K, storeUpdater: EH) {
     return async (
-      event: HoldingUpdatedArg &
-        FingerprintUpdatedArg &
-        ChannelFinalizedArg &
-        ChallengeRegisteredArg
+      event: HoldingUpdatedArg & AllocationUpdatedArg & ChannelFinalizedArg & ChallengeRegisteredArg
     ) => {
       const {channelId} = event;
       this._logger.trace({event}, `${eventName} being handled`);

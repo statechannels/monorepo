@@ -116,14 +116,15 @@ contract MultiAssetHolder is IMultiAssetHolder, ForceMove {
         address asset = outcome[assetIndex].asset;
 
         // effects and interactions
-        (allocation, ) = _transfer(asset, fromChannelId, allocation, indices); // update in place to newAllocation
+        uint256 initialHoldings;
+        (allocation, initialHoldings) = _transfer(asset, fromChannelId, allocation, indices); // update in place to newAllocation
         outcome[assetIndex].assetOutcomeBytes = abi.encode(
             Outcome.AssetOutcome(Outcome.AssetOutcomeType.Allocation, abi.encode(allocation))
         );
         outcomeBytes = abi.encode(outcome);
         bytes32 outcomeHash = keccak256(outcomeBytes);
         _updateFingerprint(fromChannelId, stateHash, challengerAddress, outcomeHash);
-        emit FingerprintUpdated(fromChannelId, outcomeBytes);
+        emit AllocationUpdated(fromChannelId, assetIndex, initialHoldings);
     }
 
     /**
@@ -189,33 +190,43 @@ contract MultiAssetHolder is IMultiAssetHolder, ForceMove {
                 targetOutcomeBytes,
                 (Outcome.OutcomeItem[])
             );
-            Outcome.AssetOutcome memory assetOutcome = abi.decode(
-                outcome[assetIndex].assetOutcomeBytes,
-                (Outcome.AssetOutcome)
-            );
-            require(
-                assetOutcome.assetOutcomeType == Outcome.AssetOutcomeType.Allocation,
-                '!allocation'
-            );
-            allocation = abi.decode(
-                assetOutcome.allocationOrGuaranteeBytes,
-                (Outcome.AllocationItem[])
-            );
+            {
+                Outcome.AssetOutcome memory assetOutcome = abi.decode(
+                    outcome[assetIndex].assetOutcomeBytes,
+                    (Outcome.AssetOutcome)
+                );
+                require(
+                    assetOutcome.assetOutcomeType == Outcome.AssetOutcomeType.Allocation,
+                    '!allocation'
+                );
+                allocation = abi.decode(
+                    assetOutcome.allocationOrGuaranteeBytes,
+                    (Outcome.AllocationItem[])
+                );
+            }
 
             // effects and interactions
-            allocation = _claim(asset, guarantorChannelId, guarantee, allocation, indices);
+            uint256 initialHoldings;
+            (allocation, initialHoldings) = _claim(
+                asset,
+                guarantorChannelId,
+                guarantee,
+                allocation,
+                indices
+            );
             outcome[assetIndex].assetOutcomeBytes = abi.encode(
                 Outcome.AssetOutcome(Outcome.AssetOutcomeType.Allocation, abi.encode(allocation))
             );
-            bytes memory outcomeBytes = abi.encode(outcome);
-            bytes32 outcomeHash = keccak256(outcomeBytes);
-            _updateFingerprint(
-                guarantee.targetChannelId,
-                targetStateHash,
-                targetChallengerAddress,
-                outcomeHash
-            );
-            emit FingerprintUpdated(guarantee.targetChannelId, outcomeBytes);
+            {
+                bytes32 outcomeHash = keccak256(abi.encode(outcome));
+                _updateFingerprint(
+                    guarantee.targetChannelId,
+                    targetStateHash,
+                    targetChallengerAddress,
+                    outcomeHash
+                );
+            }
+            emit AllocationUpdated(guarantee.targetChannelId, assetIndex, initialHoldings);
         }
     }
 
@@ -346,12 +357,12 @@ contract MultiAssetHolder is IMultiAssetHolder, ForceMove {
         bytes32 fromChannelId,
         Outcome.AllocationItem[] memory allocation,
         uint256[] memory indices
-    ) internal returns (Outcome.AllocationItem[] memory, bool) {
+    ) internal returns (Outcome.AllocationItem[] memory, uint256) {
         uint256 initialHoldings = holdings[asset][fromChannelId];
 
         (
             Outcome.AllocationItem[] memory newAllocation,
-            bool allocatesOnlyZeros,
+            ,
             uint256[] memory payouts,
             uint256 totalPayouts
         ) = _computeNewAllocation(initialHoldings, allocation, indices);
@@ -376,7 +387,7 @@ contract MultiAssetHolder is IMultiAssetHolder, ForceMove {
                 }
             }
         }
-        return (newAllocation, allocatesOnlyZeros);
+        return (newAllocation, initialHoldings);
     }
 
     /**
@@ -389,7 +400,7 @@ contract MultiAssetHolder is IMultiAssetHolder, ForceMove {
         Outcome.Guarantee memory guarantee,
         Outcome.AllocationItem[] memory allocation,
         uint256[] memory indices
-    ) internal returns (Outcome.AllocationItem[] memory) {
+    ) internal returns (Outcome.AllocationItem[] memory, uint256) {
         uint256 initialHoldings = holdings[asset][guarantorChannelId];
 
         (
@@ -420,8 +431,8 @@ contract MultiAssetHolder is IMultiAssetHolder, ForceMove {
                 }
             }
         }
-        return newAllocation;
-        // TODO emit OutcomeUpdated(guarantorChannelId, initialHoldings);
+
+        return (newAllocation, initialHoldings);
     }
 
     /**

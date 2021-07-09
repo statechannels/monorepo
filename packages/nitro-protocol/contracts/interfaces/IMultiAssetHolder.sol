@@ -81,12 +81,12 @@ interface IMultiAssetHolder {
     );
 
     /**
-     * @dev Indicates the fingerprint for this channelId has changed due to a transfer or claim. Includes sufficient data to compute:
-     * - the preimage of this hash as well as
+     * @dev Indicates the assetOutcome for this channelId and assetIndex has changed due to a transfer or claim. Includes sufficient data to compute:
+     * - the new assetOutcome
      * - the new holdings for this channelId and any others that were transferred to
      * - the payouts to external destinations
      * @param channelId The channelId of the funds being withdrawn.
-     * @param outcomeBytes The (encoded) new outcome hashed into the fingerprint
+     * @param initialHoldings holdings[asset][channelId] **before** the allocations were updated. The asset in question can be inferred from the calldata of the transaction (it might be "all assets")
      */
-    event FingerprintUpdated(bytes32 indexed channelId, bytes outcomeBytes);
+    event AllocationUpdated(bytes32 indexed channelId, uint256 assetIndex, uint256 initialHoldings);
 }

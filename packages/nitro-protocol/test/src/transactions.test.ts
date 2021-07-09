@@ -11,7 +11,6 @@ import {
   createRespondTransaction,
   createSignatureArguments,
   MAX_TX_DATA_SIZE,
-  createPushOutcomeTransaction,
 } from '../../src/transactions';
 import {getRandomNonce, largeOutcome} from '../test-helpers';
 

@@ -1,8 +1,6 @@
 import {TEST_ACCOUNTS} from '@statechannels/devtools';
 import {
   channelDataToStatus,
-  ContractArtifacts,
-  encodeOutcome,
   getChannelId,
   randomChannelId,
   TestContractArtifacts,
@@ -15,7 +13,6 @@ import {
   simpleEthAllocation,
   simpleTokenAllocation,
   State,
-  toNitroState,
   Uint256,
 } from '@statechannels/wallet-core';
 import {BigNumber, constants, Contract, providers, Wallet} from 'ethers';
@@ -30,7 +27,7 @@ import {
 import {alice as aWallet, bob as bWallet} from '../../engine/__test__/fixtures/signing-wallets';
 import {stateSignedBy} from '../../engine/__test__/fixtures/states';
 import {ChainService} from '../chain-service';
-import {FingerprintUpdatedArg, ChallengeRegisteredArg, HoldingUpdatedArg} from '../types';
+import {AllocationUpdatedArg, ChallengeRegisteredArg, HoldingUpdatedArg} from '../types';
 
 const zeroAddress = makeAddress(constants.AddressZero);
 /* eslint-disable no-process-env, @typescript-eslint/no-non-null-assertion */
@@ -45,7 +42,7 @@ const provider: providers.JsonRpcProvider = new providers.JsonRpcProvider(rpcEnd
 
 const defaultNoopListeners = {
   holdingUpdated: _.noop,
-  fingerprintUpdated: _.noop,
+  allocationUpdated: _.noop,
   channelFinalized: _.noop,
   challengeRegistered: _.noop,
 };
@@ -155,7 +152,7 @@ async function setUpConclude(isEth = true) {
         {destination: alice.destination, amount: BN.from(1)},
         {destination: bob.destination, amount: BN.from(3)},
       ]);
-  const outcomeAfter = isEth
+  const newAssetOutcome = isEth
     ? simpleEthAllocation([
         {destination: alice.destination, amount: BN.from(0)},
         {destination: bob.destination, amount: BN.from(0)},
@@ -189,7 +186,7 @@ async function setUpConclude(isEth = true) {
     bAddress: bEthWallet.address,
     state: state1,
     signatures,
-    outcomeAfter,
+    newAssetOutcome,
   };
 }
 
@@ -415,18 +412,38 @@ describe('concludeAndWithdraw', () => {
   });
 
   it('Successful concludeAndWithdraw with eth allocation', async () => {
-    const {channelId, aAddress, bAddress, state, signatures, outcomeAfter} = await setUpConclude();
-
-    const fingerprintUpdated: FingerprintUpdatedArg = {
+    const {
       channelId,
-      outcomeBytes: encodeOutcome([outcomeAfter]),
+      aAddress,
+      bAddress,
+      state,
+      signatures,
+      newAssetOutcome,
+    } = await setUpConclude();
+
+    const AllocationUpdated: AllocationUpdatedArg = {
+      channelId,
+      asset: zeroAddress,
+      newHoldings: '0x00' as Uint256,
+      externalPayouts: [
+        {
+          amount: BN.from(1),
+          destination: makeDestination(aAddress).toLowerCase(),
+        },
+        {
+          amount: BN.from(3),
+          destination: makeDestination(bAddress).toLowerCase(),
+        },
+      ],
+      internalPayouts: [],
+      newAssetOutcome,
     };
 
     const p = new Promise<void>(resolve =>
       chainService.registerChannel(channelId, [zeroAddress], {
         ...defaultNoopListeners,
-        fingerprintUpdated: arg => {
-          expect(arg).toMatchObject(fingerprintUpdated);
+        allocationUpdated: arg => {
+          expect(arg).toMatchObject(AllocationUpdated);
           resolve();
         },
       })
@@ -443,20 +460,33 @@ describe('concludeAndWithdraw', () => {
   });
 
   it('Register channel -> concludeAndWithdraw -> mine confirmation blocks for erc20', async () => {
-    const {channelId, aAddress, bAddress, state, signatures, outcomeAfter} = await setUpConclude(
+    const {channelId, aAddress, bAddress, state, signatures, newAssetOutcome} = await setUpConclude(
       false
     );
 
-    const fingerprintUpdated: FingerprintUpdatedArg = {
+    const AllocationUpdated: AllocationUpdatedArg = {
       channelId,
-      outcomeBytes: encodeOutcome([outcomeAfter]),
+      asset: erc20Address,
+      newHoldings: '0x00' as Uint256,
+      externalPayouts: [
+        {
+          amount: BN.from(1),
+          destination: makeDestination(aAddress).toLowerCase(),
+        },
+        {
+          amount: BN.from(3),
+          destination: makeDestination(bAddress).toLowerCase(),
+        },
+      ],
+      internalPayouts: [],
+      newAssetOutcome,
     };
 
     const p = new Promise<void>(resolve =>
       chainService.registerChannel(channelId, [erc20Address], {
         ...defaultNoopListeners,
-        fingerprintUpdated: arg => {
-          expect(arg).toMatchObject(fingerprintUpdated);
+        allocationUpdated: arg => {
+          expect(arg).toMatchObject(AllocationUpdated);
           resolve();
         },
       })
@@ -479,20 +509,33 @@ describe('concludeAndWithdraw', () => {
   });
 
   it('concludeAndWithdraw -> register channel -> mine confirmation blocks for erc20', async () => {
-    const {channelId, aAddress, bAddress, state, signatures, outcomeAfter} = await setUpConclude(
+    const {channelId, aAddress, bAddress, state, signatures, newAssetOutcome} = await setUpConclude(
       false
     );
 
-    const fingerprintUpdated: FingerprintUpdatedArg = {
+    const AllocationUpdated: AllocationUpdatedArg = {
       channelId,
-      outcomeBytes: encodeOutcome([outcomeAfter]),
+      asset: erc20Address,
+      newHoldings: '0x00' as Uint256,
+      externalPayouts: [
+        {
+          amount: BN.from(1),
+          destination: makeDestination(aAddress).toLowerCase(),
+        },
+        {
+          amount: BN.from(3),
+          destination: makeDestination(bAddress).toLowerCase(),
+        },
+      ],
+      internalPayouts: [],
+      newAssetOutcome,
     };
 
     const p = new Promise<void>(resolve =>
       chainService.registerChannel(channelId, [erc20Address], {
         ...defaultNoopListeners,
-        fingerprintUpdated: arg => {
-          expect(arg).toMatchObject(fingerprintUpdated);
+        allocationUpdated: arg => {
+          expect(arg).toMatchObject(AllocationUpdated);
           resolve();
         },
       })

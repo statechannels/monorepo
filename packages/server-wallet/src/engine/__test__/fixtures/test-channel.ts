@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import {FundingStrategy} from '@statechannels/client-api-schema';
 import {
-  Address,
   BN,
   calculateChannelId,
   ChannelConstants,

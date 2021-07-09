@@ -2,7 +2,7 @@ import {Logger} from 'pino';
 
 import {
   HoldingUpdatedArg,
-  FingerprintUpdatedArg,
+  AllocationUpdatedArg,
   ChannelFinalizedArg,
   ChallengeRegisteredArg,
   ChainEventSubscriberInterface,
@@ -71,9 +71,9 @@ export class EventTracker {
   }
 
   // Pass event to managed subscriber only if new
-  fingerprintUpdated(arg: FingerprintUpdatedArg, blockNumber: number, logIndex: number): void {
-    if (this.isNewEvent('fingerPrintUpdatedQueue', blockNumber, logIndex)) {
-      this.managedSubscriber.fingerprintUpdated(arg);
+  allocationUpdated(arg: AllocationUpdatedArg, blockNumber: number, logIndex: number): void {
+    if (this.isNewEvent('AllocationUpdatedQueue', blockNumber, logIndex)) {
+      this.managedSubscriber.allocationUpdated(arg);
     }
   }
 
