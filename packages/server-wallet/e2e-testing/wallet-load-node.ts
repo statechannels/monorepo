@@ -12,7 +12,9 @@ import {createLogger} from '../src/logger';
 
 import {
   CloseChannelStep,
-  CreateChannelStep,
+  CreateDirectlyFundedChannelStep,
+  CreateLedgerChannelStep,
+  CreateLedgerFundedChannelStep,
   JobChannelLink,
   LoadNodeConfig,
   Peers,
@@ -198,8 +200,26 @@ export class WalletLoadNode {
    * TODO: Typing should not use any type for the request
    */
   private stepHandlers: Record<Step['type'], (req: any) => Promise<ObjectiveDoneResult>> = {
-    CreateChannel: async (request: CreateChannelStep) => {
-      const [result] = await this.serverWallet.createChannels([request.channelParams]);
+    CreateDirectlyFundedChannel: async (request: CreateDirectlyFundedChannelStep) => {
+      const [result] = await this.serverWallet.createChannels([
+        {...request.channelParams, fundingStrategy: 'Direct'},
+      ]);
+      const {jobId} = request;
+      const {channelId} = result;
+
+      this.jobToChannelMap.push({jobId, channelId});
+      await this.shareChannelIdsWithPeers({jobId, channelId});
+      return result.done;
+    },
+    CreateLedgerFundedChannel: async (request: CreateLedgerFundedChannelStep) => {
+      const ledgerResult = this.jobToChannelMap.find(j => j.jobId === request.fundingLedgerJobId);
+      if (!ledgerResult) {
+        throw new Error(`Cannot find channel id for ledger job ${request.fundingLedgerJobId}`);
+      }
+      const {channelId: fundingLedgerChannelId} = ledgerResult;
+      const [result] = await this.serverWallet.createChannels([
+        {...request.channelParams, fundingStrategy: 'Ledger', fundingLedgerChannelId},
+      ]);
       const {jobId} = request;
       const {channelId} = result;
 
@@ -221,6 +241,16 @@ export class WalletLoadNode {
       const result = await this.serverWallet.updateChannel(channelId, allocations, appData);
 
       return result;
+    },
+
+    CreateLedgerChannel: async (req: CreateLedgerChannelStep) => {
+      const result = await this.serverWallet.createLedgerChannel(req.ledgerChannelParams);
+      const {jobId} = req;
+      const {channelId} = result;
+
+      this.jobToChannelMap.push({jobId, channelId});
+      await this.shareChannelIdsWithPeers({jobId, channelId});
+      return result.done;
     },
   };
 

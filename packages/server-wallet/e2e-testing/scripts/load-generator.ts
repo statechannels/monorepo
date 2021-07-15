@@ -33,7 +33,11 @@ async function createLoad() {
     createTime,
     updateTime,
     outputFile,
+    fundingStrategy,
+    numberOfLedgerChannels,
+    ledgerTime,
   } = await yargs(hideBin(process.argv))
+    .option('fundingStrategy', {choices: ['direct', 'ledger'], default: 'ledger'})
     .option('closeChannels', {
       alias: 'c',
       default: true,
@@ -45,6 +49,10 @@ async function createLoad() {
       type: 'boolean',
       describe: 'Whether the output is formatted nicely with spaces',
     })
+    .option('numberOfLedgerChannels', {
+      default: 5,
+      describe: 'The amount of channels that should be created.',
+    })
     .option('numberOfChannels', {
       alias: 'n',
       default: 10,
@@ -54,6 +62,12 @@ async function createLoad() {
       type: 'number',
       description: `The range of time for a CreateChannelStep.
       CreateChannelSteps will be assigned a timestamp randomly from 0 to createTime`,
+      default: ms('10s'),
+    })
+    .option('ledgerTime', {
+      type: 'number',
+      description: `The range of time for a CreateLedgerChannelStep.
+      Each CreateLedgerChannelStep will be incremented by a random value from 0 to updateTime `,
       default: ms('10s'),
     })
     .option('updateTime', {
@@ -101,14 +115,39 @@ async function createLoad() {
         createTime,
         updateTime,
         closeTime,
+        fundingStrategy,
+        numberOfLedgerChannels,
+        ledgerTime,
       })}`
     )
   );
+  let timestamp = 0;
+  const ledgerJobIds: string[] = [];
+  const ledgerParticipants = generateParticipants(roles, 0);
+  // If we're ledger funding we want to create a couple funded ledger channels
+  if (fundingStrategy === 'ledger') {
+    _.times(numberOfLedgerChannels, () => {
+      timestamp += generateRandomNumber(0, ledgerTime);
+      const ledgerJobId = generateSlug(4);
 
+      steps.push({
+        type: 'CreateLedgerChannel',
+        jobId: ledgerJobId,
+        serverId: ledgerParticipants[0].participantId,
+        timestamp,
+        // We want the ledger channel to have plent of funds
+        ledgerChannelParams: {
+          ...generateChannelParams(ledgerParticipants, 1_000_000),
+          fundingStrategy: 'Direct',
+        },
+      });
+      ledgerJobIds.push(ledgerJobId);
+    });
+  }
   _.times(numberOfChannels, () => {
     // The timestamp represents when these steps should occur
     // As we add steps we keep increasing the timestamp
-    let timestamp = generateRandomNumber(0, createTime);
+    timestamp += generateRandomNumber(0, createTime);
     const startIndex = generateRandomNumber(0, Object.keys(roles).length - 1);
 
     // Due to https://github.com/statechannels/statechannels/issues/3652 we'll run into duplicate channelIds if we use the same constants.
@@ -119,14 +158,25 @@ async function createLoad() {
     const jobId = generateSlug(4);
     jobIds.push(jobId);
 
-    steps.push({
-      type: 'CreateChannel',
-      jobId,
-      serverId: participants[0].participantId,
-      timestamp,
-      channelParams: generateChannelParams(roles, participants),
-    });
+    if (fundingStrategy === 'ledger') {
+      steps.push({
+        type: 'CreateLedgerFundedChannel',
+        serverId: participants[0].participantId,
+        timestamp,
+        channelParams: generateChannelParams(participants),
+        fundingLedgerJobId: getRandomJob(ledgerJobIds),
+        jobId,
+      });
+    } else {
+      steps.push({
+        type: 'CreateDirectlyFundedChannel',
+        serverId: participants[0].participantId,
+        timestamp,
+        channelParams: generateChannelParams(participants),
 
+        jobId,
+      });
+    }
     _.times(amountOfUpdates, async updateIndex => {
       timestamp += generateRandomNumber(0, updateTime);
       steps.push({
@@ -136,7 +186,7 @@ async function createLoad() {
         timestamp,
         updateParams: {
           appData: hexZeroPad(hexlify(updateIndex), 32),
-          allocations: generateChannelParams(roles, participants).allocations,
+          allocations: generateChannelParams(participants).allocations,
         },
       });
     });
@@ -157,6 +207,10 @@ async function createLoad() {
   console.log(chalk.greenBright(`Complete!`));
 }
 
+function getRandomJob(jobIds: string[]): string {
+  const index = generateRandomNumber(0, jobIds.length - 1);
+  return jobIds[index];
+}
 function generateRandomNumber(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
@@ -190,18 +244,16 @@ function generateParticipants(roles: Record<string, RoleConfig>, startIndex: num
 
 /**
  * Creates channel parameters based on the provided roles and participants.
- * @param roles
- * @param participants
  * @returns A CreateChannelParams object that can be passed into createChannel
  */
 function generateChannelParams(
-  roles: Record<string, RoleConfig>,
-  participants: Participant[]
-): CreateChannelParams {
+  participants: Participant[],
+  initialAmount = 5
+): Omit<CreateChannelParams, 'fundingStrategy'> {
   // Eventually these should vary
   const allocationItems = participants.map(p => ({
     destination: p.destination,
-    amount: BigNumber.from(5).toHexString(),
+    amount: BigNumber.from(initialAmount).toHexString(),
   }));
 
   return {
@@ -214,7 +266,7 @@ function generateChannelParams(
     ],
     appDefinition: COUNTING_APP_DEFINITION,
     appData: utils.hexZeroPad('0x0', 32),
-    fundingStrategy: 'Direct',
+
     challengeDuration: ms('1d') / 1000, // This is 1 day in seconds,
   };
 }

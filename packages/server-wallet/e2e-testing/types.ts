@@ -1,13 +1,31 @@
 import {CreateChannelParams, UpdateChannelParams} from '@statechannels/client-api-schema';
 
-export type CreateChannelStep = {
-  type: 'CreateChannel';
+import {CreateLedgerChannelParams} from '../wallet';
+
+export type CreateDirectlyFundedChannelStep = {
+  type: 'CreateDirectlyFundedChannel';
   serverId: string;
   jobId: string;
   timestamp: number;
-  channelParams: CreateChannelParams;
+  channelParams: Omit<CreateChannelParams, 'fundingLedgerChannelId' | 'fundingStrategy'>;
 };
 
+export type CreateLedgerFundedChannelStep = {
+  type: 'CreateLedgerFundedChannel';
+  serverId: string;
+  jobId: string;
+  timestamp: number;
+  fundingLedgerJobId: string;
+  channelParams: Omit<CreateChannelParams, 'fundingLedgerChannelId' | 'fundingStrategy'>;
+};
+
+export type CreateLedgerChannelStep = {
+  serverId: string;
+  type: 'CreateLedgerChannel';
+  jobId: string;
+  timestamp: number;
+  ledgerChannelParams: CreateLedgerChannelParams;
+};
 export type CloseChannelStep = {
   serverId: string;
   type: 'CloseChannel';
@@ -23,7 +41,12 @@ export type UpdateChannelStep = {
   updateParams: Omit<UpdateChannelParams, 'channelId'>;
 };
 
-export type Step = CreateChannelStep | CloseChannelStep | UpdateChannelStep;
+export type Step =
+  | CreateLedgerChannelStep
+  | CreateLedgerFundedChannelStep
+  | CreateDirectlyFundedChannelStep
+  | CloseChannelStep
+  | UpdateChannelStep;
 
 /**
  * A job is just a collection of steps all with the same job id
