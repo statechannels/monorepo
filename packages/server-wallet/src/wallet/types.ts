@@ -1,9 +1,14 @@
-import {ChannelResult} from '@statechannels/client-api-schema';
+import {ChannelResult, CreateChannelParams} from '@statechannels/client-api-schema';
 import _ from 'lodash';
 
 import {ObjectiveStatus, WalletObjective} from '../models/objective';
 
 export type ObjectiveError = ObjectiveTimedOutError | InternalError;
+
+export type CreateLedgerChannelParams = Pick<
+  CreateChannelParams,
+  'participants' | 'allocations' | 'challengeDuration' | 'fundingStrategy'
+> & {fundingStrategy: 'Direct' | 'Fake'};
 
 /**
  * The objective timed out without being completed.
