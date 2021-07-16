@@ -11,6 +11,14 @@ import './interfaces/IForceMoveApp.sol';
 contract ForceMove is IForceMove {
     mapping(bytes32 => bytes32) public statusOf;
 
+    struct ChannelData {
+        uint48 turnNumRecord;
+        uint48 finalizesAt;
+        bytes32 stateHash; // keccak256(abi.encode(State))
+        address challengerAddress;
+        bytes32 outcomeHash;
+    }
+
     // Public methods:
 
     /**

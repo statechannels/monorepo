@@ -99,11 +99,12 @@
     "prettier:write": "prettier --write './contracts/**/*.sol'",
     "test": "yarn test:contracts && yarn test:app --all",
     "test:app": "jest -c ./config/jest/jest.config.js",
-    "test:ci": "yarn test:ci:gas && yarn test:ci:app && yarn test:ci:contracts ",
+    "test:ci": "yarn test:ci:gas && yarn test:ci:app && yarn test:ci:contracts && yarn test:ninja-nitro ",
     "test:ci:app": "yarn test:app --all --ci --bail --maxWorkers=4",
     "test:ci:gas": "yarn test:gas",
     "test:ci:contracts": "yarn test:contracts --all --ci --bail --maxWorkers=4",
     "test:contracts": "jest -c ./config/jest/jest.contracts.config.js",
+    "test:ninja-nitro": "jest -c ./config/jest/jest.ninja-nitro.config.js",
     "test:gas": "jest -c ./config/jest/jest.gas-benchmarks.config.js"
   },
   "types": "lib/src/index.d.ts"

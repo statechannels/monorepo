@@ -8,6 +8,8 @@ import FULLTestNitroAdjudicatorArtifact from '../artifacts/contracts/test/TESTNi
 import FULLTestAssetHolderArtifact from '../artifacts/contracts/test/TESTAssetHolder.sol/TESTAssetHolder.json';
 import FULLCountingAppArtifact from '../artifacts/contracts/CountingApp.sol/CountingApp.json';
 import FULLHashLockedSwapArtifact from '../artifacts/contracts/examples/HashLockedSwap.sol/HashLockedSwap.json';
+import FULLSingleChannelAdjudicatorArtifact from '../artifacts/contracts/ninja-nitro/SingleChannelAdjudicator.sol/SingleChannelAdjudicator.json';
+import FULLAdjudicatorFactoryArtifact from '../artifacts/contracts/ninja-nitro/AdjudicatorFactory.sol/AdjudicatorFactory.json';
 
 // https://hardhat.org/guides/compile-contracts.html#artifacts
 const fields = [
@@ -36,6 +38,10 @@ export const ContractArtifacts = {
   Erc20AssetHolderArtifact: minimize(FULLErc20AssetHolderArtifact),
   EthAssetHolderArtifact: minimize(FULLEthAssetHolderArtifact),
   HashLockedSwapArtifact: minimize(FULLHashLockedSwapArtifact),
+  NinjaNitro: {
+    SingleChannelAdjudicatorArtifact: minimize(FULLSingleChannelAdjudicatorArtifact),
+    AdjudicatorFactory: minimize(FULLAdjudicatorFactoryArtifact),
+  },
 };
 
 /*
