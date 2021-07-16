@@ -50,7 +50,13 @@ import * as ChannelState from '../protocols/state';
 import {createLogger} from '../logger';
 import {ConfigValidationError, SingleThreadedEngine} from '../engine/engine';
 
-import {ObjectiveResult, WalletEvents, ObjectiveDoneResult, UpdateChannelResult} from './types';
+import {
+  ObjectiveResult,
+  WalletEvents,
+  ObjectiveDoneResult,
+  UpdateChannelResult,
+  CreateLedgerChannelParams,
+} from './types';
 
 export class Wallet extends EventEmitter<WalletEvents> {
   /**
@@ -192,10 +198,7 @@ export class Wallet extends EventEmitter<WalletEvents> {
    * @returns An ObjectiveResult indicating success or the error that occured
    */
   public async createLedgerChannel(
-    channelParams: Pick<
-      CreateChannelParams,
-      'participants' | 'allocations' | 'challengeDuration' | 'fundingStrategy'
-    > & {fundingStrategy: 'Direct' | 'Fake'}
+    channelParams: CreateLedgerChannelParams
   ): Promise<ObjectiveResult> {
     try {
       const createResult = await this._engine.createLedgerChannel(

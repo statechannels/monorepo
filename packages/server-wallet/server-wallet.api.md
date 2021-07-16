@@ -64,6 +64,11 @@ export type ChainServiceConfiguration = {
     attachChainService: boolean;
 } & Partial<Exclude<ChainServiceArgs, 'logger'>>;
 
+// @public (undocumented)
+export type CreateLedgerChannelParams = Pick<CreateChannelParams, 'participants' | 'allocations' | 'challengeDuration' | 'fundingStrategy'> & {
+    fundingStrategy: 'Direct' | 'Fake';
+};
+
 // @public
 export type DatabaseConfiguration = RequiredDatabaseConfiguration & OptionalDatabaseConfiguration;
 
@@ -452,9 +457,7 @@ export class Wallet extends EventEmitter<WalletEvents> {
     // Warning: (ae-forgotten-export) The symbol "MessageServiceFactory" needs to be exported by the entry point index.d.ts
     static create(incomingConfig: IncomingWalletConfig, messageServiceFactory: MessageServiceFactory): Promise<Wallet>;
     createChannels(channelParameters: CreateChannelParams[]): Promise<ObjectiveResult[]>;
-    createLedgerChannel(channelParams: Pick<CreateChannelParams, 'participants' | 'allocations' | 'challengeDuration' | 'fundingStrategy'> & {
-        fundingStrategy: 'Direct' | 'Fake';
-    }): Promise<ObjectiveResult>;
+    createLedgerChannel(channelParams: CreateLedgerChannelParams): Promise<ObjectiveResult>;
     // (undocumented)
     destroy(): Promise<void>;
     // (undocumented)
@@ -491,7 +494,7 @@ export interface WalletEvents {
 //
 // src/engine/types.ts:31:3 - (ae-forgotten-export) The symbol "ChainRequest" needs to be exported by the entry point index.d.ts
 // src/engine/types.ts:69:39 - (ae-forgotten-export) The symbol "WalletObjective" needs to be exported by the entry point index.d.ts
-// src/wallet/types.ts:44:3 - (ae-forgotten-export) The symbol "ObjectiveStatus" needs to be exported by the entry point index.d.ts
+// src/wallet/types.ts:49:3 - (ae-forgotten-export) The symbol "ObjectiveStatus" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 
