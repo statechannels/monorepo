@@ -15,14 +15,20 @@ import {getTestProvider, setupContract} from '../../../test-helpers';
 
 type RevertReason =
   // each reason represents a distinct code path that we should check in this test
+  | 'None->B: from not signed by AI' // tested
+  | 'None->B: to not signed by B' // tested
+  | 'None->A: from not signed by BI' // tested
+  | 'None->A: to not signed by A' // tested
+  | 'A->AB: to not signed by B' // tested
+  | 'A->AB: from not signed by A' // tested
+  | 'B->AB: to not signed by A' // tested
+  | 'B->AB: from not signed by B' // tested
+  | 'must transition to AB' // tested
+  | 'AB->? not allowed' // tested
   | 'destinations may not change' // tested
   | 'p2.amt !constant' // tested
   | 'total allocation changed' // tested
-  | 'incorrect move from None' // tested
   | 'inferior support proof' // tested
-  | 'incorrect move from A' // tested
-  | 'incorrect move from B' // tested
-  | 'move from None,A,B only' //tested
   | 'X / J outcome mismatch' // tested
   | 'X.appDefinition changed' // tested
   | 'X.challengeDuration changed' // tested
@@ -192,122 +198,135 @@ beforeAll(async () => {
 
 const turnNumTo = 0; // TODO this is unused, but presumably it _should_ be used
 const nParticipants = 0; // TODO this is unused
-const signedByFrom = 0b00; // TODO this is unused
+
+const signedBy = {
+  none: 0b000,
+  alice: 0b001,
+  bob: 0b010,
+  irene: 0b100,
+  ab: 0b011,
+  ai: 0b101,
+  bi: 0b110,
+  all: 0b111,
+};
 
 describe('EmbeddedApplication: named state transitions', () => {
-  it('returns true / reverts for a correct / incorrect None => A transition', async () => {
-    const result = await embeddedApplication.validTransition(
-      NoneVariablePartForJ,
-      AvariablePartForJ,
+  type State = 'none' | 'a' | 'b' | 'ab';
+  const variables: Record<State, any> = {
+    none: NoneVariablePartForJ,
+    a: AvariablePartForJ,
+    b: BvariablePartForJ,
+    ab: ABvariablePartForJ,
+  };
+  const tx = (from: State, to: State, signedByFrom, signedByTo) =>
+    embeddedApplication.validTransition(
+      variables[from],
+      variables[to],
       turnNumTo,
       nParticipants,
       signedByFrom,
-      0b01 // signedByTo = just Alice
+      signedByTo
     );
-    expect(result).toBe(true);
-    await expectRevert(
-      () =>
-        embeddedApplication.validTransition(
-          NoneVariablePartForJ,
-          AvariablePartForJ,
-          turnNumTo,
-          nParticipants,
-          signedByFrom,
-          0b10 // signedByTo = just Bob
-        ),
-      'incorrect move from None'
-    );
+
+  describe('transitions from None state', () => {
+    test('None->A: reverts when from is not signed by BI', async () => {
+      const msg: RevertReason = 'None->A: from not signed by BI';
+      await expectRevert(() => tx('none', 'a', signedBy.alice, signedBy.alice), msg);
+      await expectRevert(() => tx('none', 'a', signedBy.bob, signedBy.alice), msg);
+      await expectRevert(() => tx('none', 'a', signedBy.ai, signedBy.alice), msg);
+      await expectRevert(() => tx('none', 'a', signedBy.none, signedBy.alice), msg);
+    });
+
+    test('None->A: reverts when to is not signed by A', async () => {
+      const msg: RevertReason = 'None->A: to not signed by A';
+      await expectRevert(() => tx('none', 'a', signedBy.bi, signedBy.bob), msg);
+      await expectRevert(() => tx('none', 'a', signedBy.bi, signedBy.irene), msg);
+      await expectRevert(() => tx('none', 'a', signedBy.all, signedBy.none), msg);
+    });
+
+    test('None->B: reverts when to is not signed by B', async () => {
+      const msg: RevertReason = 'None->B: to not signed by B';
+      await expectRevert(() => tx('none', 'b', signedBy.all, signedBy.irene), msg);
+      await expectRevert(() => tx('none', 'b', signedBy.all, signedBy.alice), msg);
+      await expectRevert(() => tx('none', 'b', signedBy.all, signedBy.ai), msg);
+      await expectRevert(() => tx('none', 'b', signedBy.all, signedBy.none), msg);
+    });
+
+    test('None->B: reverts when from is not signed by AI', async () => {
+      const msg: RevertReason = 'None->B: from not signed by AI';
+      await expectRevert(() => tx('none', 'b', signedBy.bi, signedBy.all), msg);
+      await expectRevert(() => tx('none', 'b', signedBy.irene, signedBy.all), msg);
+      await expectRevert(() => tx('none', 'b', signedBy.none, signedBy.ai), msg);
+    });
+
+    test('valid transitions', async () => {
+      await expect(tx('none', 'a', signedBy.all, signedBy.alice)).resolves.toEqual(true);
+      await expect(tx('none', 'a', signedBy.bi, signedBy.alice)).resolves.toEqual(true);
+      await expect(tx('none', 'b', signedBy.all, signedBy.bob)).resolves.toEqual(true);
+      await expect(tx('none', 'b', signedBy.ai, signedBy.bob)).resolves.toEqual(true);
+    });
   });
-  it('returns true / reverts for a correct / incorrect None => B transition', async () => {
-    const result = await embeddedApplication.validTransition(
-      NoneVariablePartForJ,
-      BvariablePartForJ,
-      turnNumTo,
-      nParticipants,
-      signedByFrom,
-      0b10 // signedByTo = just Bob
-    );
-    expect(result).toBe(true);
-    await expectRevert(
-      () =>
-        embeddedApplication.validTransition(
-          NoneVariablePartForJ,
-          BvariablePartForJ,
-          turnNumTo,
-          nParticipants,
-          signedByFrom,
-          0b01 // signedByTo = just Alice
-        ),
-      'incorrect move from None'
-    );
+
+  describe('transitions from A', () => {
+    test('valid signatures', async () => {
+      await expect(tx('a', 'ab', signedBy.alice, signedBy.bob)).resolves.toEqual(true);
+      await expect(tx('a', 'ab', signedBy.ai, signedBy.bob)).resolves.toEqual(true);
+    });
+
+    let msg: RevertReason = 'A->AB: from not signed by A';
+    test('A->AB: from not signed from A', async () => {
+      msg = 'A->AB: from not signed by A';
+      await expectRevert(() => tx('a', 'ab', signedBy.bi, signedBy.all), msg);
+    });
+
+    test('A->AB: to not signed by B', async () => {
+      msg = 'A->AB: to not signed by B';
+      await expectRevert(() => tx('a', 'ab', signedBy.all, signedBy.alice), msg);
+      await expectRevert(() => tx('a', 'ab', signedBy.all, signedBy.ai), msg);
+    });
+
+    test('A->invalid transition', async () => {
+      msg = 'must transition to AB';
+      await expectRevert(() => tx('a', 'none', signedBy.all, signedBy.all), msg);
+      await expectRevert(() => tx('a', 'a', signedBy.all, signedBy.all), msg);
+      await expectRevert(() => tx('a', 'b', signedBy.all, signedBy.all), msg);
+    });
   });
-  it('returns true / reverts for a correct / incorrect A => AB transition', async () => {
-    const result = await embeddedApplication.validTransition(
-      AvariablePartForJ,
-      ABvariablePartForJ,
-      turnNumTo,
-      nParticipants,
-      signedByFrom,
-      0b10 // signedByTo = just Bob
-    );
-    expect(result).toBe(true);
-    await expectRevert(
-      () =>
-        embeddedApplication.validTransition(
-          AvariablePartForJ,
-          ABvariablePartForJ,
-          turnNumTo,
-          nParticipants,
-          signedByFrom,
-          0b01 // signedByTo = just Alice
-        ),
-      'incorrect move from A'
-    );
+
+  describe('transitions from B', () => {
+    test('valid signatures', async () => {
+      await expect(tx('b', 'ab', signedBy.bob, signedBy.alice)).resolves.toEqual(true);
+      await expect(tx('b', 'ab', signedBy.bi, signedBy.alice)).resolves.toEqual(true);
+    });
+
+    let msg: RevertReason = 'B->AB: from not signed by B';
+
+    test('B->AB: from not signed by B', async () => {
+      msg = 'B->AB: from not signed by B';
+      await expectRevert(() => tx('b', 'ab', signedBy.ai, signedBy.all), msg);
+    });
+
+    test('B->AB: to not signed by A', async () => {
+      msg = 'B->AB: to not signed by A';
+      await expectRevert(() => tx('b', 'ab', signedBy.all, signedBy.bob), msg);
+      await expectRevert(() => tx('b', 'ab', signedBy.all, signedBy.bi), msg);
+    });
+
+    test('B->invalid transition', async () => {
+      msg = 'must transition to AB';
+      await expectRevert(() => tx('b', 'none', signedBy.all, signedBy.all), msg);
+      await expectRevert(() => tx('b', 'a', signedBy.all, signedBy.all), msg);
+      await expectRevert(() => tx('b', 'b', signedBy.all, signedBy.all), msg);
+    });
   });
-  it('returns true / reverts for a correct / incorrect B => AB transition', async () => {
-    const result = await embeddedApplication.validTransition(
-      BvariablePartForJ,
-      ABvariablePartForJ,
-      turnNumTo,
-      nParticipants,
-      signedByFrom,
-      0b01 // signedByTo = just Alice
-    );
-    expect(result).toBe(true);
-    await expectRevert(
-      () =>
-        embeddedApplication.validTransition(
-          BvariablePartForJ,
-          ABvariablePartForJ,
-          turnNumTo,
-          nParticipants,
-          signedByFrom,
-          0b10 // signedByTo = just Bob
-        ),
-      'incorrect move from B'
-    );
-  });
-  it('reverts when trying to move from AB', async () => {
-    const evenGreaterSupportProofForX = {
-      ...ABvariablePartForJ,
-      appData: encodeEmbeddedApplicationData({
-        alreadyMoved: AlreadyMoved.A,
-        channelIdForX: getChannelId(stateForX.channel),
-        supportProofForX: supportProofForX({...greaterStateForX, turnNum: 99}),
-      }),
-    };
-    await expectRevert(
-      () =>
-        embeddedApplication.validTransition(
-          ABvariablePartForJ,
-          evenGreaterSupportProofForX,
-          turnNumTo,
-          nParticipants,
-          signedByFrom,
-          0b10 // signedByTo = just Bob
-        ),
-      'move from None,A,B only'
-    );
+
+  test('transitions from AB always revert', async () => {
+    const msg: RevertReason = 'AB->? not allowed';
+
+    await expectRevert(() => tx('ab', 'none', signedBy.all, signedBy.all), msg);
+    await expectRevert(() => tx('ab', 'a', signedBy.all, signedBy.all), msg);
+    await expectRevert(() => tx('ab', 'b', signedBy.all, signedBy.all), msg);
+    await expectRevert(() => tx('ab', 'ab', signedBy.all, signedBy.all), msg);
   });
 });
 
@@ -322,8 +341,8 @@ describe('EmbeddedApplication: reversions', () => {
           {...AvariablePartForJ, outcome: encodeOutcome(maliciousOutcome)},
           turnNumTo,
           nParticipants,
-          signedByFrom,
-          0b01 // signedByTo = just Alice
+          signedBy.all,
+          signedBy.alice
         ),
       'destinations may not change'
     );
@@ -338,8 +357,8 @@ describe('EmbeddedApplication: reversions', () => {
           {...AvariablePartForJ, outcome: encodeOutcome(maliciousOutcome)},
           turnNumTo,
           nParticipants,
-          signedByFrom,
-          0b01 // signedByTo = just Alice
+          signedBy.all,
+          signedBy.alice
         ),
       'p2.amt !constant'
     );
@@ -354,8 +373,8 @@ describe('EmbeddedApplication: reversions', () => {
           {...AvariablePartForJ, outcome: encodeOutcome(maliciousOutcome)},
           turnNumTo,
           nParticipants,
-          signedByFrom,
-          0b01 // signedByTo = just Alice
+          signedBy.all,
+          signedBy.alice
         ),
       'total allocation changed'
     );
@@ -374,8 +393,8 @@ describe('EmbeddedApplication: reversions', () => {
             inferiorSupportProof,
             turnNumTo,
             nParticipants,
-            signedByFrom,
-            0b10 // signedByTo = just Bob
+            signedBy.all,
+            signedBy.bob
           ),
         'inferior support proof'
       );
@@ -390,8 +409,8 @@ describe('EmbeddedApplication: reversions', () => {
           notProperlyAbsorbed,
           turnNumTo,
           nParticipants,
-          signedByFrom,
-          0b01 // signedByTo = just Alice
+          signedBy.all,
+          signedBy.alice
         ),
       'X / J outcome mismatch'
     );
@@ -410,8 +429,8 @@ describe('EmbeddedApplication: reversions', () => {
           appDefinitionChanged,
           turnNumTo,
           nParticipants,
-          signedByFrom,
-          0b01 // signedByTo = just Alice
+          signedBy.all,
+          signedBy.alice
         ),
       'X.appDefinition changed'
     );
@@ -430,8 +449,8 @@ describe('EmbeddedApplication: reversions', () => {
           challengeDurationChanged,
           turnNumTo,
           nParticipants,
-          signedByFrom,
-          0b01 // signedByTo = just Alice
+          signedBy.all,
+          signedBy.alice
         ),
       'X.challengeDuration changed'
     );
@@ -450,8 +469,8 @@ describe('EmbeddedApplication: reversions', () => {
           malicious,
           turnNumTo,
           nParticipants,
-          signedByFrom,
-          0b01 // signedByTo = just Alice
+          signedBy.all,
+          signedBy.alice
         ),
       '1 or 2 states required'
     );
@@ -470,8 +489,8 @@ describe('EmbeddedApplication: reversions', () => {
           malicious,
           turnNumTo,
           nParticipants,
-          signedByFrom,
-          0b01 // signedByTo = just Alice
+          signedBy.all,
+          signedBy.alice
         ),
       'invalid whoSignedWhat'
     );
@@ -493,8 +512,8 @@ describe('EmbeddedApplication: reversions', () => {
           malicious,
           turnNumTo,
           nParticipants,
-          signedByFrom,
-          0b01 // signedByTo = just Alice
+          signedBy.all,
+          signedBy.alice
         ),
       'sig0 !by participant0'
     );
@@ -516,8 +535,8 @@ describe('EmbeddedApplication: reversions', () => {
           malicious,
           turnNumTo,
           nParticipants,
-          signedByFrom,
-          0b01 // signedByTo = just Alice
+          signedBy.all,
+          signedBy.alice
         ),
       'sig1 !by participant1'
     );
